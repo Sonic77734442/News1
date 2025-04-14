@@ -30,3 +30,4 @@ export async function fetchCategoryPosts(slug: string, start = 0, end = 6) {
 
   return await sanity.fetch(query, { slug })
 }
+console.log('DATASET:', process.env.NEXT_PUBLIC_SANITY_DATASET)
