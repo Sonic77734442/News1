@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
@@ -103,8 +102,8 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
           </section>
         </div>
 
-        {/* 🧭 Sidebar с последними новостями */}
-        <Sidebar posts={recentPosts || []} />
+        {/* 🧭 Sidebar без пропов */}
+        <Sidebar />
       </div>
 
       <Footer />
