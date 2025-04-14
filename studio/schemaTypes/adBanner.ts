@@ -21,27 +21,44 @@ export default {
       name: 'image',
       title: 'Изображение',
       type: 'image',
+<<<<<<< HEAD
       hidden: ({ parent }) => parent?.type !== 'image',
+=======
+      hidden: ({ parent }: { parent: any }) => parent?.type !== 'image',
+>>>>>>> 319e0e7 (Initial commit)
     },
     {
       name: 'link',
       title: 'Ссылка',
       type: 'url',
+<<<<<<< HEAD
       hidden: ({ parent }) => parent?.type !== 'image',
+=======
+      hidden: ({ parent }: { parent: any }) => parent?.type !== 'image',
+>>>>>>> 319e0e7 (Initial commit)
     },
     {
       name: 'html',
       title: 'HTML/JS код (вставка баннера)',
       type: 'text',
       rows: 6,
+<<<<<<< HEAD
       hidden: ({ parent }) => parent?.type === 'image',
+=======
+      hidden: ({ parent }: { parent: any }) => parent?.type === 'image',
+>>>>>>> 319e0e7 (Initial commit)
     },
     {
       name: 'frequency',
       title: 'Частота показа (0–100, %)',
       type: 'number',
+<<<<<<< HEAD
       validation: Rule => Rule.min(0).max(100),
       hidden: ({ parent }) => parent?.type === 'adsense',
+=======
+      validation: (Rule: any) => Rule.min(0).max(100),
+      hidden: ({ parent }: { parent: any }) => parent?.type === 'adsense',
+>>>>>>> 319e0e7 (Initial commit)
     },
     {
       name: 'position',

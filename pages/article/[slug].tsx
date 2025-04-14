@@ -52,7 +52,11 @@ export default function ArticlePage({ article }: { article: any }) {
         <div className="lg:col-span-3 space-y-10">
           <FullArticle {...article} />
         </div>
+<<<<<<< HEAD
         <Sidebar />
+=======
+        <Sidebar posts={[]} />
+>>>>>>> 319e0e7 (Initial commit)
       </div>
 
       <Footer />
