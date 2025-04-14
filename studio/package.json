@@ -15,11 +15,7 @@
     "sanity"
   ],
   "dependencies": {
-<<<<<<< HEAD
-    "@sanity/vision": "^3.81.0",
-=======
     "@sanity/vision": "^3.84.0",
->>>>>>> 319e0e7 (Initial commit)
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sanity": "^3.81.0",
