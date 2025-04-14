@@ -9,8 +9,8 @@ type FullArticleProps = {
   title: string;
   publishedAt: string;
   author?: { name: string };
-  category?: { title?: string }; // ← исправлено здесь
-  mainImage?: { asset: { url: string } };
+  category?: { title?: string };
+  mainImage?: { asset?: { url: string } }; // ← вот здесь правка
   body: PortableTextBlock[];
 };
 
