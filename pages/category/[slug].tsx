@@ -9,15 +9,27 @@ import { fetchCategoryPosts } from '@/lib/sanity';
 
 const pageSize = 6;
 
+// ✅ Полный тип статьи
+type PostType = {
+  _id: string;
+  title: string;
+  slug: { current: string };
+  publishedAt: string;
+  author?: { name: string };
+  mainImage?: { asset: { url: string } };
+  body: any;
+  category?: { title: string };
+};
+
 export default function CategoryPage() {
   const router = useRouter();
   const rawSlug = router.query.slug;
   const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug;
 
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<PostType[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(false); // ✅ защита от повторной загрузки
+  const [loading, setLoading] = useState(false);
   const loaderRef = useRef(null);
 
   const loadPosts = async () => {
@@ -28,7 +40,7 @@ export default function CategoryPage() {
     const start = page * pageSize;
     const end = start + pageSize;
 
-    const newPosts = await fetchCategoryPosts(slug, start, end);
+    const newPosts: PostType[] = await fetchCategoryPosts(slug, start, end);
 
     if (!newPosts || newPosts.length === 0) {
       setHasMore(false);
@@ -36,9 +48,8 @@ export default function CategoryPage() {
       return;
     }
 
-    // ✅ фильтрация дубликатов по _id
-    const newUnique = newPosts.filter(
-      (post) => !posts.some((p) => p._id === post._id)
+    const newUnique = newPosts.filter((post) =>
+      !posts.some((p) => p._id === post._id)
     );
 
     setPosts((prev) => [...prev, ...newUnique]);
@@ -110,7 +121,7 @@ export default function CategoryPage() {
           )}
         </div>
 
-        <Sidebar />
+        <Sidebar posts={[]} />
       </div>
 
       <Footer />
