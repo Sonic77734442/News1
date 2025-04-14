@@ -5,7 +5,7 @@ module.exports = {
     './pages/**/*.{js,ts,jsx,tsx}',
     './components/**/*.{js,ts,jsx,tsx}',
     './app/**/*.{js,ts,jsx,tsx}',
-    './studio/**/*.{js,ts,jsx,tsx,ts}'
+    './studio/src/**/*.{js,ts,jsx,tsx}', // <– добавлен безопасный путь
   ],
   theme: {
     extend: {},
