@@ -1,11 +1,12 @@
 import { createClient } from '@sanity/client'
 
 export const sanity = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '8kp3qa75',
-  dataset: process.env.SANITY_DATASET || process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
-  apiVersion: '2023-03-01',
+  projectId: '8kp3qa75',               // 🔒 Хардкодим ID
+  dataset: 'production',              // 🔒 Только строчные буквы!
+  apiVersion: '2023-03-01',           // 🔒 Формат YYYY-MM-DD
   useCdn: true,
 })
+
 
 export async function fetchCategoryPosts(slug: string, start = 0, end = 6) {
   const query = `
