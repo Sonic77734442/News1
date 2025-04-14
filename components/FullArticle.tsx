@@ -54,13 +54,15 @@ export default function FullArticle({
     }
   };
 
-  const plainTextPreview = (body as PortableTextBlock[])
-  ?.filter((block): block is PortableTextBlock & { children: { text: string }[] } =>
-    block._type === 'block' && Array.isArray(block.children)
-  )
-  ?.map((block) => block.children.map((child) => child.text).join(''))
-  ?.join(' ')
-  ?.slice(0, 150);
+  const plainTextPreview = body
+    ?.filter((block) => block._type === 'block' && Array.isArray((block as any).children))
+    ?.map((block) =>
+      ((block as any).children as Array<any>)
+        .map((child) => child.text)
+        .join('')
+    )
+    ?.join(' ')
+    ?.slice(0, 150);
 
   return (
     <>
