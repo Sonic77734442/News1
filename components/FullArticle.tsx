@@ -55,13 +55,13 @@ export default function FullArticle({
   };
 
   const plainTextPreview = body
-    ?.filter(
-      (block): block is PortableTextBlock & { children: { text: string }[] } =>
-        block._type === 'block' && Array.isArray((block as any).children)
-    )
-    ?.map((block) => block.children.map((child) => child.text).join(''))
-    ?.join(' ')
-    ?.slice(0, 150);
+  ?.filter(
+    (block): block is PortableTextBlock & { children: { text: string }[] } =>
+      block._type === 'block' && Array.isArray((block as any).children)
+  )
+  ?.map((block) => block.children.map((child) => child.text).join(''))
+  ?.join(' ')
+  ?.slice(0, 150);
 
   return (
     <>
