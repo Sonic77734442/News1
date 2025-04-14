@@ -6,7 +6,6 @@ import { Facebook, Instagram, Send } from 'lucide-react'
 import { sanity } from '@/lib/sanity'
 import SidebarAd from './SidebarAd'
 
-
 type Post = {
   _id: string
   title: string
