@@ -31,12 +31,13 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(false);
   const loaderRef = useRef(null);
 
-  const loadPosts = async () => {
+  const loadPosts = async (reset = false) => {
     if (!slug || typeof slug !== 'string' || loading) return;
 
     setLoading(true);
 
-    const start = page * pageSize;
+    const currentPage = reset ? 0 : page;
+    const start = currentPage * pageSize;
     const end = start + pageSize;
 
     const newPosts: PostType[] = await fetchCategoryPosts(slug, start, end);
@@ -51,8 +52,8 @@ export default function CategoryPage() {
       !posts.some((p) => p._id === post._id)
     );
 
-    setPosts((prev) => [...prev, ...newUnique]);
-    setPage((prev) => prev + 1);
+    setPosts((prev) => reset ? newUnique : [...prev, ...newUnique]);
+    setPage((prev) => reset ? 1 : prev + 1);
 
     if (newPosts.length < pageSize) {
       setHasMore(false);
@@ -61,12 +62,17 @@ export default function CategoryPage() {
     setLoading(false);
   };
 
+  // Загружаем при первом монтировании или изменении slug
   useEffect(() => {
     if (typeof slug === 'string') {
-      loadPosts();
+      setPosts([]);
+      setPage(0);
+      setHasMore(true);
+      loadPosts(true); // сбрасываем страницу и подгружаем заново
     }
   }, [slug]);
 
+  // Infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
