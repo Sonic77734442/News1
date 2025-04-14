@@ -9,13 +9,12 @@ import { fetchCategoryPosts } from '@/lib/sanity';
 
 const pageSize = 6;
 
-// ✅ Финальный корректный тип поста
 type PostType = {
   _id: string;
   title: string;
   slug: { current: string };
   publishedAt: string;
-  mainImage: { asset: { url: string } }; // обязательное поле
+  mainImage: { asset: { url: string } };
   description?: string;
   author?: { name: string };
   category?: { slug: { current: string } };
@@ -121,7 +120,7 @@ export default function CategoryPage() {
           )}
         </div>
 
-        <Sidebar posts={[]} />
+        <Sidebar />
       </div>
 
       <Footer />
