@@ -9,8 +9,8 @@ type FullArticleProps = {
   title: string;
   publishedAt: string;
   author?: { name: string };
-  category?: { title?: string };
-  mainImage?: { asset?: { url: string } }; // ← вот здесь правка
+  category?: { title?: string }; // ✅ сделано опциональным
+  mainImage?: { asset?: { url: string } }; // ✅ asset опционален
   body: PortableTextBlock[];
 };
 
@@ -74,14 +74,14 @@ export default function FullArticle({
         <meta property="og:title" content={title} />
         <meta property="og:description" content={plainTextPreview} />
         <meta property="og:type" content="article" />
-        <meta property="og:image" content={mainImage?.asset.url} />
+        <meta property="og:image" content={mainImage?.asset?.url} />
         <meta property="og:url" content={`https://newssite.kz/article/${slug}`} />
 
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={plainTextPreview} />
-        <meta name="twitter:image" content={mainImage?.asset.url} />
+        <meta name="twitter:image" content={mainImage?.asset?.url} />
 
         {/* Canonical */}
         <link rel="canonical" href={`https://newssite.kz/article/${slug}`} />
@@ -92,7 +92,7 @@ export default function FullArticle({
             "@context": "https://schema.org",
             "@type": "NewsArticle",
             "headline": title,
-            "image": [mainImage?.asset.url],
+            "image": [mainImage?.asset?.url],
             "datePublished": publishedAt,
             "author": {
               "@type": "Person",
@@ -103,7 +103,7 @@ export default function FullArticle({
       </Head>
 
       <article className="space-y-6 border-b pb-10">
-        {mainImage?.asset.url && (
+        {mainImage?.asset?.url && (
           <div className="relative w-full h-64 md:h-96 rounded-xl overflow-hidden">
             <img
               src={mainImage.asset.url}
