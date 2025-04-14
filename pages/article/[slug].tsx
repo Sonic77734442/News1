@@ -11,9 +11,9 @@ import Sidebar from '@/components/Sidebar';
 import InfiniteArticleScroll from '@/components/InfiniteArticleScroll'; // ✅ ДОБАВИЛ
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const slugs: string[] = await sanity.fetch(getAllSlugs());
+  const slugs: { slug: string }[] = await sanity.fetch(getAllSlugs());
 
-  const paths = slugs.map((slug) => ({
+  const paths = slugs.map(({ slug }) => ({
     params: { slug },
   }));
 
