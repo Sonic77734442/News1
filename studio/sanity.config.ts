@@ -1,16 +1,19 @@
-import {defineConfig} from 'sanity'
-import {structureTool} from 'sanity/structure'
-import {visionTool} from '@sanity/vision'
-import {schemaTypes} from './schemaTypes'
+import { defineConfig } from 'sanity'
+import { structureTool } from 'sanity/structure'
+// import { visionTool } from '@sanity/vision' // временно отключено
+import { schemaTypes } from './schemaTypes'
 
 export default defineConfig({
   name: 'default',
-  title: 'news1.kz',
+  title: 'news1kz',
 
-  projectId: '8kp3qa75',
+  projectId: 'your-project-id',
   dataset: 'production',
 
-  plugins: [structureTool(), visionTool()],
+  plugins: [
+    structureTool(),
+    // visionTool(), // отключено для сборки
+  ],
 
   schema: {
     types: schemaTypes,
