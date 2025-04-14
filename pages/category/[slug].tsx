@@ -9,16 +9,16 @@ import { fetchCategoryPosts } from '@/lib/sanity';
 
 const pageSize = 6;
 
-// ✅ Полный тип статьи
+// ✅ Финальный корректный тип поста
 type PostType = {
   _id: string;
   title: string;
   slug: { current: string };
   publishedAt: string;
+  mainImage: { asset: { url: string } }; // обязательное поле
+  description?: string;
   author?: { name: string };
-  mainImage?: { asset: { url: string } };
-  body: any;
-  category?: { title: string };
+  category?: { slug: { current: string } };
 };
 
 export default function CategoryPage() {
