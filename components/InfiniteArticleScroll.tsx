@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import FullArticle from './FullArticle';
+import type { PortableTextBlock } from 'sanity';
 
 export type ArticleType = {
   title: string;
@@ -7,7 +8,7 @@ export type ArticleType = {
   author?: { name: string };
   category?: { title: string };
   mainImage?: { asset: { url: string } };
-  body: string;
+  body: PortableTextBlock[];
 };
 
 const dummyArticles: ArticleType[] = Array.from({ length: 10 }, (_, i) => ({
@@ -16,7 +17,22 @@ const dummyArticles: ArticleType[] = Array.from({ length: 10 }, (_, i) => ({
   author: { name: 'Автор статьи' },
   category: { title: 'Категория' },
   mainImage: { asset: { url: '/placeholder.jpg' } },
-  body: `Текст статьи номер ${i + 1}. Здесь может быть markdown или rich text.`
+  body: [
+    {
+      _type: 'block',
+      _key: `block-${i}`,
+      style: 'normal',
+      markDefs: [],
+      children: [
+        {
+          _type: 'span',
+          _key: `span-${i}`,
+          text: `Текст статьи номер ${i + 1}`,
+          marks: [],
+        },
+      ],
+    },
+  ],
 }));
 
 export default function InfiniteArticleScroll() {
