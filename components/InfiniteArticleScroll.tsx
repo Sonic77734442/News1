@@ -1,8 +1,10 @@
 // components/InfiniteArticleScroll.tsx
+
 import React, { useEffect, useRef, useState } from 'react';
 import FullArticle from './FullArticle';
 import type { PortableTextBlock } from 'sanity';
-import { fetchCategoryPosts } from '@/lib/sanity'; // адаптируй путь если нужно
+import { sanity } from '@/lib/sanity';
+import { getArticlesByCategory } from '@/lib/queries';
 
 export type ArticleType = {
   _id: string;
@@ -10,8 +12,9 @@ export type ArticleType = {
   slug: { current: string };
   publishedAt: string;
   author?: { name: string };
-  category?: { slug: { current: string }, title: string };
-  mainImage?: { asset: { url: string } };
+  category?: { slug: { current: string }; title?: string };
+  mainImage?: { asset?: { url: string } };
+  description?: string;
   body: PortableTextBlock[];
 };
 
@@ -30,24 +33,24 @@ export default function InfiniteArticleScroll({
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
   const loadArticles = async () => {
+    if (!categorySlug) return;
+
     const start = page * pageSize;
     const end = start + pageSize;
 
-    const newPosts = await fetchCategoryPosts(categorySlug, start, end);
-    const filtered = newPosts.filter((post: ArticleType) => post.slug.current !== excludeSlug);
+    const query = getArticlesByCategory(categorySlug, excludeSlug, start, end);
+    const newPosts: ArticleType[] = await sanity.fetch(query);
 
-    if (filtered.length === 0) {
+    if (!newPosts || newPosts.length === 0) {
       setHasMore(false);
       return;
     }
 
-    setArticles((prev) => [...prev, ...filtered]);
+    setArticles((prev) => [...prev, ...newPosts]);
     setPage((prev) => prev + 1);
   };
 
   useEffect(() => {
-    if (!categorySlug) return;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && hasMore) {
@@ -59,7 +62,7 @@ export default function InfiniteArticleScroll({
 
     if (loaderRef.current) observer.observe(loaderRef.current);
     return () => observer.disconnect();
-  }, [hasMore, categorySlug]);
+  }, [hasMore, categorySlug, excludeSlug]);
 
   return (
     <div className="space-y-16 mt-12">
