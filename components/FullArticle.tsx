@@ -4,7 +4,6 @@ import { Facebook, Twitter, Send, ThumbsUp } from 'lucide-react';
 import { PortableText } from '@portabletext/react';
 import type { PortableTextBlock } from 'sanity';
 import { portableTextComponents } from "@/components/portableTextComponents";
-import { portableTextComponents } from "@/components/PortableTextRender";
 
 type FullArticleProps = {
   title: string;
