@@ -1,5 +1,3 @@
-// pages/category/[slug]/page/[page].tsx
-
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -25,7 +23,7 @@ type PostType = {
 
 export const getStaticPaths: GetStaticPaths = async () => {
   // Загружаем все slug категорий
-  const categorySlugs: string[] = await sanity.fetch(`
+  const categorySlugs: { slug: string }[] = await sanity.fetch(`
     *[_type == "category"]{ "slug": slug.current }
   `);
 
@@ -77,7 +75,6 @@ export default function CategoryPagePaginated({
 }) {
   const router = useRouter();
   const basePath = `/category/${slug}`;
-
   const title = `Категория: ${slug} – страница ${page}`;
 
   return (
