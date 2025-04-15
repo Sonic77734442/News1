@@ -43,8 +43,15 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const slug = params?.slug as string;
+  const slug = params?.slug as string | undefined;
   const page = parseInt(params?.page as string) || 1;
+
+  // Если slug по какой-то причине не пришёл — отдать 404
+  if (!slug) {
+    return {
+      notFound: true,
+    };
+  }
 
   const start = (page - 1) * pageSize;
   const end = start + pageSize;
