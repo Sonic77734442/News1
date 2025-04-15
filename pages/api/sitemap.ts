@@ -1,13 +1,16 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { sanity } from '@/lib/sanity';
-import { getAllSlugs } from '@/lib/queries';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const slugs: { slug: string }[] = await sanity.fetch(getAllSlugs());
+  console.log('🟢 Sitemap handler triggered');
 
-    // ✅ Логируем результат
-    console.log('📄 Sitemap slugs:', slugs);
+  try {
+    const slugs = [
+      { slug: 'test-news-1' },
+      { slug: 'kazakhstan-analytics' },
+      { slug: 'it-startups-2025' },
+    ];
+
+    console.log('📄 Sitemap slugs (FAKE):', slugs);
 
     const baseUrl = 'https://news1.kz';
     const staticPages = [
@@ -36,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       `</urlset>`;
 
     res.setHeader('Content-Type', 'application/xml');
-    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.setHeader('Cache-Control', 'no-store');
     res.status(200).send(sitemap);
   } catch (error) {
     console.error('❌ Sitemap generation error:', error);
