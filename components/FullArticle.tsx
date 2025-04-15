@@ -9,8 +9,8 @@ type FullArticleProps = {
   title: string;
   publishedAt: string;
   author?: { name: string };
-  category?: { title?: string }; // ✅ сделано опциональным
-  mainImage?: { asset?: { url: string } }; // ✅ asset опционален
+  category?: { title?: string };
+  mainImage?: { asset?: { url: string } };
   body: PortableTextBlock[];
 };
 
@@ -141,62 +141,60 @@ export default function FullArticle({
           </button>
 
           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-            
-<div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-  <a
-    href={`https://www.facebook.com/sharer/sharer.php?u=https://www.news1.kz/article/${slug}`}
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    <Facebook className="w-5 h-5 hover:text-blue-600 transition" />
-  </a>
-  <a
-    href={`https://twitter.com/intent/tweet?url=https://www.news1.kz/article/${slug}&text=${encodeURIComponent(title)}`}
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    <Twitter className="w-5 h-5 hover:text-sky-500 transition" />
-  </a>
-  <a
-    href={`https://t.me/share/url?url=https://www.news1.kz/article/${slug}&text=${encodeURIComponent(title)}`}
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    <Send className="w-5 h-5 hover:text-blue-400 transition" />
-  </a>
-</div>
-
-          </div>
-        </div>
-
-        {/* Комментарии */}
-        <div className="mt-10">
-          <h2 className="text-xl font-semibold mb-4">Комментарии</h2>
-          <div className="space-y-4">
-            {comments.map((comment) => (
-              <div key={comment.id} className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                <p className="text-sm font-semibold mb-1">{comment.name}</p>
-                <p className="text-sm text-gray-700 dark:text-gray-300">{comment.text}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-4 flex flex-col gap-2">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              rows={3}
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm"
-              placeholder="Оставьте комментарий..."
-            ></textarea>
-            <button
-              onClick={handleAddComment}
-              className="self-end px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=https://www.news1.kz/article/${slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              Отправить
-            </button>
+              <Facebook className="w-5 h-5 hover:text-blue-600 transition" />
+            </a>
+            <a
+              href={`https://twitter.com/intent/tweet?url=https://www.news1.kz/article/${slug}&text=${encodeURIComponent(title)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Twitter className="w-5 h-5 hover:text-sky-500 transition" />
+            </a>
+            <a
+              href={`https://t.me/share/url?url=https://www.news1.kz/article/${slug}&text=${encodeURIComponent(title)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Send className="w-5 h-5 hover:text-blue-400 transition" />
+            </a>
           </div>
         </div>
+
+        {/* Комментарии временно скрыты */}
+        {false && (
+          <div className="mt-10">
+            <h2 className="text-xl font-semibold mb-4">Комментарии</h2>
+            <div className="space-y-4">
+              {comments.map((comment) => (
+                <div key={comment.id} className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                  <p className="text-sm font-semibold mb-1">{comment.name}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{comment.text}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 flex flex-col gap-2">
+              <textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                rows={3}
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm"
+                placeholder="Оставьте комментарий..."
+              ></textarea>
+              <button
+                onClick={handleAddComment}
+                className="self-end px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+              >
+                Отправить
+              </button>
+            </div>
+          </div>
+        )}
       </article>
     </>
   );
