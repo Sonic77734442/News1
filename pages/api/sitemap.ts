@@ -1,18 +1,17 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { sanity } from '@/lib/sanity'; // ✅ Убедись, что путь правильный
+import { getAllSlugs } from '@/lib/queries'; // ✅ и этот тоже
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log('🟢 Sitemap handler triggered');
 
   try {
-    const slugs = [
-      { slug: 'test-news-1' },
-      { slug: 'kazakhstan-analytics' },
-      { slug: 'it-startups-2025' },
-    ];
+    const slugs: { slug: string }[] = await sanity.fetch(getAllSlugs());
 
-    console.log('📄 Sitemap slugs (FAKE):', slugs);
+    console.log('📄 Sitemap slugs (REAL):', slugs);
 
     const baseUrl = 'https://news1.kz';
+
     const staticPages = [
       '',
       '/category/finance',
