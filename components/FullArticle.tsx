@@ -141,15 +141,31 @@ export default function FullArticle({
           </button>
 
           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-            <a href="#" target="_blank" rel="noopener noreferrer">
-              <Facebook className="w-5 h-5 hover:text-blue-600 transition" />
-            </a>
-            <a href="#" target="_blank" rel="noopener noreferrer">
-              <Twitter className="w-5 h-5 hover:text-sky-500 transition" />
-            </a>
-            <a href="#" target="_blank" rel="noopener noreferrer">
-              <Send className="w-5 h-5 hover:text-blue-400 transition" />
-            </a>
+            
+<div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+  <a
+    href={`https://www.facebook.com/sharer/sharer.php?u=https://www.news1.kz/article/${slug}`}
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <Facebook className="w-5 h-5 hover:text-blue-600 transition" />
+  </a>
+  <a
+    href={`https://twitter.com/intent/tweet?url=https://www.news1.kz/article/${slug}&text=${encodeURIComponent(title)}`}
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <Twitter className="w-5 h-5 hover:text-sky-500 transition" />
+  </a>
+  <a
+    href={`https://t.me/share/url?url=https://www.news1.kz/article/${slug}&text=${encodeURIComponent(title)}`}
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <Send className="w-5 h-5 hover:text-blue-400 transition" />
+  </a>
+</div>
+
           </div>
         </div>
 
