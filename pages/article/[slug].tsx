@@ -1,71 +1,20 @@
+// pages/article/[slug].tsx
+
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { groq } from 'next-sanity';
-import { client } from '@/lib/sanity.client';
-import PortableText from '@/components/PortableText';
-import { urlFor } from '@/lib/urlFor';
-import Image from 'next/image';
+import { sanity } from '@/lib/sanity';
+import { getArticleBySlug, getAllSlugs } from '@/lib/queries';
+import FullArticle from '@/components/FullArticle';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import Sidebar from '@/components/Sidebar';
-import { Post } from '@/typings';
-import ShareButtons from '@/components/ShareButtons';
-
-interface Props {
-  post: Post;
-}
-
-export default function ArticlePage({ post }: Props) {
-  const router = useRouter();
-  if (router.isFallback) return <div>Загрузка...</div>;
-
-  return (
-    <div className="container mx-auto px-4 py-10 max-w-5xl">
-      <Head>
-        <title>{post.title}</title>
-        <meta name="description" content={post.description} />
-        <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={post.description} />
-        <meta property="og:image" content={urlFor(post.mainImage).url()} />
-        <meta property="og:url" content={`https://www.news1.kz/article/${post.slug.current}`} />
-        <meta property="og:type" content="article" />
-      </Head>
-
-      <article>
-        <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-        <p className="text-gray-500 text-sm mb-6">{post.publishedAt}</p>
-        <Image
-          src={urlFor(post.mainImage).url()}
-          alt={post.title}
-          width={1200}
-          height={600}
-          className="rounded-md mb-6"
-        />
-        <PortableText value={post.body} />
-
-        <ShareButtons
-          url={`https://www.news1.kz/article/${post.slug.current}`}
-          title={post.title}
-        />
-      </article>
-
-      <Sidebar />
-    </div>
-  );
-}
-
-const query = groq`
-  *[_type == "article" && slug.current == $slug][0] {
-    ...,
-    author->,
-    categories[]->
-  }
-`;
+import InfiniteArticleScroll from '@/components/InfiniteArticleScroll'; // ✅ ДОБАВИЛ
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const query = groq`*[_type == "article"]{ slug }`;
-  const posts = await client.fetch(query);
-  const paths = posts.map((post: Post) => ({
-    params: { slug: post.slug.current },
+  const slugs: { slug: string }[] = await sanity.fetch(getAllSlugs());
+
+  const paths = slugs.map(({ slug }) => ({
+    params: { slug },
   }));
 
   return {
@@ -75,13 +24,45 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const slug = params?.slug;
-  const post = await client.fetch(query, { slug });
+  const slug = params?.slug as string;
+  const query = getArticleBySlug(slug);
 
-  if (!post) return { notFound: true };
+  const article = await sanity.fetch(query);
+
+  if (!article) {
+    return { notFound: true };
+  }
 
   return {
-    props: { post },
+    props: { article },
     revalidate: 60,
   };
 };
+
+export default function ArticlePage({ article }: { article: any }) {
+  return (
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
+      <Head>
+        <title>{article?.title || 'Новость'} – NewsSite.kz</title>
+        <meta name="description" content={article?.body?.slice?.(0, 150) || 'Описание недоступно'} />
+      </Head>
+
+      <Header />
+
+      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
+        <div className="lg:col-span-3 space-y-10">
+          <FullArticle {...article} />
+          {/* 🔄 Блок бесконечной прокрутки из той же категории */}
+          <InfiniteArticleScroll
+            categorySlug={article.category?.slug?.current}
+            excludeSlug={article.slug?.current}
+          />
+        </div>
+
+        <Sidebar />
+      </div>
+
+      <Footer />
+    </div>
+  );
+}
