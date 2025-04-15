@@ -7,7 +7,7 @@ export default defineConfig({
   name: 'default',
   title: 'news1kz',
 
-  projectId: 'your-project-id',
+  projectId: '8kp3qa75',
   dataset: 'production',
 
   plugins: [
