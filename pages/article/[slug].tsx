@@ -8,7 +8,7 @@ import FullArticle from '@/components/FullArticle';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Sidebar from '@/components/Sidebar';
-import InfiniteArticleScroll from '@/components/InfiniteArticleScroll'; // ✅ ДОБАВИЛ
+import InfiniteArticleScroll from '@/components/InfiniteArticleScroll';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const slugs: { slug: string }[] = await sanity.fetch(getAllSlugs());
@@ -19,7 +19,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
   return {
     paths,
-    fallback: 'blocking',
+    fallback: 'blocking', // ✅ Обязательно для генерации новых slug
   };
 };
 
@@ -40,11 +40,20 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 };
 
 export default function ArticlePage({ article }: { article: any }) {
+  const metaDescription = typeof article.body === 'string'
+    ? article.body.slice(0, 150)
+    : 'Описание недоступно';
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
       <Head>
-        <title>{article?.title || 'Новость'} – NewsSite.kz</title>
-        <meta name="description" content={article?.body?.slice?.(0, 150) || 'Описание недоступно'} />
+        <title>{article?.title || 'Новость'} – News1.kz</title>
+        <meta name="description" content={metaDescription} />
+        <meta property="og:title" content={article?.title || ''} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:image" content={article?.mainImage?.asset?.url || ''} />
+        <meta property="og:url" content={`https://www.news1.kz/article/${article?.slug?.current}`} />
+        <meta property="og:type" content="article" />
       </Head>
 
       <Header />
@@ -52,7 +61,7 @@ export default function ArticlePage({ article }: { article: any }) {
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
         <div className="lg:col-span-3 space-y-10">
           <FullArticle {...article} />
-          {/* 🔄 Блок бесконечной прокрутки из той же категории */}
+
           <InfiniteArticleScroll
             categorySlug={article.category?.slug?.current}
             excludeSlug={article.slug?.current}
