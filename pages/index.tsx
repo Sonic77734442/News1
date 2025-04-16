@@ -9,7 +9,7 @@ import Footer from '@/components/Footer';
 import Sidebar from '@/components/Sidebar';
 import PostCard from '@/components/PostCard';
 import { sanity, fetchCategoryPosts } from '@/lib/sanity';
-import sanityImageLoader from '@/lib/sanityImageLoader'; // 👈 добавили кастомный loader
+import sanityImageLoader from '@/lib/sanityImageLoader';
 
 const categories = [
   { title: 'Финансы', slug: 'finance' },
@@ -130,7 +130,12 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  context.res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=600, stale-while-revalidate=59'
+  );
+
   const featuredQuery = `
     *[_type == "post" && featured == true] | order(publishedAt desc)[0] {
       _id, title, slug, publishedAt, description,
