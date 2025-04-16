@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
+import Image from 'next/image';
 import { Facebook, Twitter, Send, ThumbsUp } from 'lucide-react';
 import { PortableText } from '@portabletext/react';
 import type { PortableTextBlock } from 'sanity';
 import { portableTextComponents } from "@/components/portableTextComponents";
+import sanityImageLoader from '@/lib/sanityImageLoader'; // 👈 импортируем кастомный loader
 
 type FullArticleProps = {
   title: string;
@@ -70,23 +72,19 @@ export default function FullArticle({
         <title>{title} – NewsSite.kz</title>
         <meta name="description" content={plainTextPreview} />
 
-        {/* Open Graph */}
         <meta property="og:title" content={title} />
         <meta property="og:description" content={plainTextPreview} />
         <meta property="og:type" content="article" />
         <meta property="og:image" content={mainImage?.asset?.url} />
         <meta property="og:url" content={`https://newssite.kz/article/${slug}`} />
 
-        {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={plainTextPreview} />
         <meta name="twitter:image" content={mainImage?.asset?.url} />
 
-        {/* Canonical */}
         <link rel="canonical" href={`https://newssite.kz/article/${slug}`} />
 
-        {/* Schema.org */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
@@ -105,10 +103,14 @@ export default function FullArticle({
       <article className="space-y-6 border-b pb-10">
         {mainImage?.asset?.url && (
           <div className="relative w-full h-64 md:h-96 rounded-xl overflow-hidden">
-            <img
+            <Image
+              loader={sanityImageLoader}
               src={mainImage.asset.url}
               alt={title}
-              className="w-full h-full object-cover object-center"
+              fill
+              priority
+              quality={75}
+              className="object-cover object-center"
             />
           </div>
         )}
@@ -125,7 +127,6 @@ export default function FullArticle({
           <PortableText value={body} components={portableTextComponents} />
         </div>
 
-        {/* Like and Share */}
         <div className="flex items-center gap-4 mt-6">
           <button
             onClick={handleLike}
@@ -133,68 +134,23 @@ export default function FullArticle({
             className="flex items-center gap-2 text-sm px-3 py-1 rounded-full transition border border-gray-300 dark:border-gray-700"
           >
             <ThumbsUp
-              className={`w-5 h-5 transition ${
-                liked ? 'text-red-600' : 'text-gray-400'
-              }`}
+              className={`w-5 h-5 transition ${liked ? 'text-red-600' : 'text-gray-400'}`}
             />
             <span>{likes}</span>
           </button>
 
           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-            <a
-              href={`https://www.facebook.com/sharer/sharer.php?u=https://www.news1.kz/article/${slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={`https://www.facebook.com/sharer/sharer.php?u=https://www.news1.kz/article/${slug}`} target="_blank" rel="noopener noreferrer">
               <Facebook className="w-5 h-5 hover:text-blue-600 transition" />
             </a>
-            <a
-              href={`https://twitter.com/intent/tweet?url=https://www.news1.kz/article/${slug}&text=${encodeURIComponent(title)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={`https://twitter.com/intent/tweet?url=https://www.news1.kz/article/${slug}&text=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer">
               <Twitter className="w-5 h-5 hover:text-sky-500 transition" />
             </a>
-            <a
-              href={`https://t.me/share/url?url=https://www.news1.kz/article/${slug}&text=${encodeURIComponent(title)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={`https://t.me/share/url?url=https://www.news1.kz/article/${slug}&text=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer">
               <Send className="w-5 h-5 hover:text-blue-400 transition" />
             </a>
           </div>
         </div>
-
-        {/* Комментарии временно скрыты */}
-        {false && (
-          <div className="mt-10">
-            <h2 className="text-xl font-semibold mb-4">Комментарии</h2>
-            <div className="space-y-4">
-              {comments.map((comment) => (
-                <div key={comment.id} className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                  <p className="text-sm font-semibold mb-1">{comment.name}</p>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">{comment.text}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4 flex flex-col gap-2">
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                rows={3}
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm"
-                placeholder="Оставьте комментарий..."
-              ></textarea>
-              <button
-                onClick={handleAddComment}
-                className="self-end px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-              >
-                Отправить
-              </button>
-            </div>
-          </div>
-        )}
       </article>
     </>
   );
