@@ -1,18 +1,20 @@
 'use client';
 import { useEffect } from 'react';
+import { useTheme } from 'next-themes';
 
 export default function TickerTape() {
+  const { theme } = useTheme();
+
   useEffect(() => {
     const container = document.getElementById('ticker-tape-widget');
-    
-    // 🧹 Удаляем старые виджеты перед добавлением нового
-    if (container) {
-      container.innerHTML = '';
-    }
+    if (container) container.innerHTML = '';
 
     const script = document.createElement('script');
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
     script.async = true;
+
+    const colorTheme = theme === 'dark' ? 'dark' : 'light';
+
     script.innerHTML = JSON.stringify({
       symbols: [
         { proName: 'FOREXCOM:EURUSD', title: 'EUR/USD' },
@@ -21,14 +23,14 @@ export default function TickerTape() {
         { proName: 'BINANCE:BTCUSDT', title: 'BTC/USDT' },
       ],
       showSymbolLogo: true,
-      colorTheme: 'light',
+      colorTheme,
       isTransparent: false,
       displayMode: 'adaptive',
       locale: 'ru',
     });
 
     container?.appendChild(script);
-  }, []);
+  }, [theme]); // перезапускаем при смене темы
 
   return (
     <div className="bg-white dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 py-2 px-4">
