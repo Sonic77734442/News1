@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -18,6 +18,22 @@ const categories = [
 ];
 
 export default function Home({ featuredPost, categoryPosts, recentPosts }: any) {
+  const [latestPosts, setLatestPosts] = useState(recentPosts);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/latest');
+        const data = await res.json();
+        setLatestPosts(data);
+      } catch (err) {
+        console.error('Ошибка при автообновлении новостей:', err);
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
       <Head>
@@ -54,9 +70,9 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
               </div>
 
               {/* Правая карточка */}
-              {Array.isArray(recentPosts) && recentPosts[0] && (
+              {Array.isArray(latestPosts) && latestPosts[0] && (
                 <div className="h-full">
-                  <PostCard post={recentPosts[0]} forceHeight />
+                  <PostCard post={latestPosts[0]} forceHeight />
                 </div>
               )}
             </section>
@@ -64,8 +80,8 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
 
           {/* 💬 2–4 свежих поста */}
           <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {Array.isArray(recentPosts) &&
-              recentPosts.slice(1, 4).map((post: any) => (
+            {Array.isArray(latestPosts) &&
+              latestPosts.slice(1, 4).map((post: any) => (
                 <PostCard key={post._id} post={post} />
               ))}
           </section>
@@ -89,9 +105,12 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
           <section className="space-y-12">
             {categories.map((cat) => (
               <div key={cat.slug} className="space-y-4">
-                <h2 className="text-lg font-bold uppercase text-gray-700 dark:text-gray-200 border-b border-gray-300 dark:border-gray-600 inline-block pb-1">
+                <Link
+                  href={`/category/${cat.slug}`}
+                  className="text-lg font-bold uppercase text-blue-700 dark:text-blue-400 hover:underline border-b border-gray-300 dark:border-gray-600 inline-block pb-1"
+                >
                   {cat.title}
-                </h2>
+                </Link>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                   {categoryPosts[cat.slug]?.map((post: any) => (
                     <PostCard key={post._id} post={post} categoryLabel={cat.title} />
