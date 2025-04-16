@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { GetStaticProps } from 'next';
+import { GetServerSideProps } from 'next';
 import TickerTape from '@/components/TickerTape';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -50,7 +50,6 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
           {/* 🔝 Hero-блок */}
           {featuredPost && (
             <section className="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-[320px]">
-              {/* Левая карточка */}
               <div className="md:col-span-2 h-full bg-blue-950 text-white rounded-lg overflow-hidden relative flex flex-col">
                 <Link href={`/article/${featuredPost.slug.current}`} className="flex-1">
                   <div className="relative w-full h-full min-h-[220px]">
@@ -69,7 +68,6 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
                 </Link>
               </div>
 
-              {/* Правая карточка */}
               {Array.isArray(latestPosts) && latestPosts[0] && (
                 <div className="h-full">
                   <PostCard post={latestPosts[0]} forceHeight />
@@ -121,7 +119,6 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
           </section>
         </div>
 
-        {/* 🧭 Sidebar без пропов */}
         <Sidebar />
       </div>
 
@@ -130,7 +127,8 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+// ⚠️ теперь getServerSideProps вместо getStaticProps
+export const getServerSideProps: GetServerSideProps = async () => {
   const featuredQuery = `
     *[_type == "post" && featured == true] | order(publishedAt desc)[0] {
       _id, title, slug, publishedAt, description,
@@ -159,6 +157,5 @@ export const getStaticProps: GetStaticProps = async () => {
       categoryPosts,
       recentPosts,
     },
-    revalidate: 60,
   };
 };
