@@ -4,10 +4,10 @@ import Script from 'next/script'
 export default function Analytics() {
   return (
     <>
-     {/* Google Tag Manager */}
+      {/* Google Tag Manager */}
       <Script
         id="gtm-script"
-        strategy="afterInteractive"
+        strategy="lazyOnload"
         dangerouslySetInnerHTML={{
           __html: `
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -19,17 +19,10 @@ export default function Analytics() {
         }}
       />
 
-      {/* CookieYes Consent Script */}
-      <Script
-        id="cookieyes"
-        strategy="afterInteractive"
-        src="https://cdn-cookieyes.com/client_data/abc123xyz456/script.js"
-      />
-
       {/* Yandex Metrika */}
       <Script
         id="metrika"
-        strategy="afterInteractive"
+        strategy="lazyOnload"
         dangerouslySetInnerHTML={{
           __html: `
             (function(m,e,t,r,i,k,a){
@@ -52,7 +45,7 @@ export default function Analytics() {
       {/* Facebook Pixel */}
       <Script
         id="facebook-pixel"
-        strategy="afterInteractive"
+        strategy="lazyOnload"
         dangerouslySetInnerHTML={{
           __html: `
             !function(f,b,e,v,n,t,s){
