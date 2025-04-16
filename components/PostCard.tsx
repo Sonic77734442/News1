@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import sanityImageLoader from '@/lib/sanityImageLoader'; // 👈 импорт кастомного loader
 
 type PostCardProps = {
   post: {
@@ -25,9 +26,11 @@ export default function PostCard({ post, categoryLabel, forceHeight = false }: P
         {imageUrl && (
           <div className="aspect-[16/9] relative overflow-hidden">
             <Image
+              loader={sanityImageLoader}
               src={imageUrl}
               alt={post.title}
               fill
+              quality={75}
               className="object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out"
             />
           </div>
