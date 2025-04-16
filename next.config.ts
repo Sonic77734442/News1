@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
     domains: ['cdn.sanity.io'],
+    formats: ['image/webp'], // ✅ теперь Next будет отдавать WebP
   },
   // ✅ Включаем динамическую sitemap и robots
   async rewrites() {
