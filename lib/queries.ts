@@ -76,3 +76,14 @@ export const getArticlesByCategory = (
     category->{title, slug}
   }
 `;
+
+
+
+export const getAllPostsForRss = () => `
+  *[_type == "article" && defined(slug.current)] | order(_createdAt desc)[0...20] {
+    title,
+    "slug": slug.current,
+    _createdAt,
+    "excerpt": pt::text(body)[0...150]
+  }
+`;
