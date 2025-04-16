@@ -12,9 +12,9 @@ import { sanity, fetchCategoryPosts } from '@/lib/sanity';
 
 const categories = [
   { title: 'Финансы', slug: 'finance' },
+  { title: 'Новости Казахстана', slug: 'kazakhstan' },
   { title: 'Спорт', slug: 'sport' },
   { title: 'IT', slug: 'it' },
-  { title: 'Новости Казахстана', slug: 'kazakhstan' },
 ];
 
 export default function Home({ featuredPost, categoryPosts, recentPosts }: any) {
@@ -107,7 +107,7 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
               <div key={cat.slug} className="space-y-4">
                 <Link
                   href={`/category/${cat.slug}`}
-                  className="text-lg font-bold uppercase text-blue-700 dark:text-blue-400 hover:underline border-b border-gray-300 dark:border-gray-600 inline-block pb-1"
+                  className="text-lg font-bold uppercase text-gray-700 dark:text-gray-300 border-b border-gray-300 dark:border-gray-600 inline-block pb-1 hover:no-underline"
                 >
                   {cat.title}
                 </Link>
