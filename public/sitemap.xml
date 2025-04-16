@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Статические страницы -->
+  <url>
+    <loc>https://news1.kz/</loc>
+    <changefreq>hourly</changefreq>
+  </url>
+  <url>
+    <loc>https://news1.kz/category/finance</loc>
+    <changefreq>hourly</changefreq>
+  </url>
+  <url>
+    <loc>https://news1.kz/category/sport</loc>
+    <changefreq>hourly</changefreq>
+  </url>
+  <url>
+    <loc>https://news1.kz/category/it</loc>
+    <changefreq>hourly</changefreq>
+  </url>
+  <url>
+    <loc>https://news1.kz/category/kazakhstan</loc>
+    <changefreq>hourly</changefreq>
+  </url>
+
+  <!-- Последние статьи -->
+  <url>
+    <loc>https://news1.kz/article/strany-opek-narastiat-dobychu-nefti</loc>
+    <changefreq>daily</changefreq>
+  </url>
+  <url>
+    <loc>https://news1.kz/article/putin-pogovoril-s-tokaevym</loc>
+    <changefreq>daily</changefreq>
+  </url>
+  <url>
+    <loc>https://news1.kz/article/putin-i-tokaev-obsudili-energetiku</loc>
+    <changefreq>daily</changefreq>
+  </url>
+  <url>
+    <loc>https://news1.kz/article/neslikhan-atagul-stala-mamoy</loc>
+    <changefreq>daily</changefreq>
+  </url>
+  <url>
+    <loc>https://news1.kz/article/andrey-nazarov-prizyv-barys</loc>
+    <changefreq>daily</changefreq>
+  </url>
+</urlset>

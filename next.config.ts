@@ -5,18 +5,13 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['cdn.sanity.io'],
   },
-  async rewrites() {
-    return [
-      {
-        source: '/sitemap.xml',
-        destination: '/api/sitemap',
-      },
-      {
-        source: '/robots.txt',
-        destination: '/api/robots',
-      },
-    ];
-  },
+  // 🔇 Перенаправления для sitemap отключены — используем static файл
+  // async rewrites() {
+  //   return [
+  //     { source: '/sitemap.xml', destination: '/api/sitemap' },
+  //     { source: '/robots.txt', destination: '/api/robots' },
+  //   ];
+  // },
 };
 
 export default nextConfig;
