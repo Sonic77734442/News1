@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import ThemeToggle from './ThemeToggle';
+import WeatherWidget from '@/components/WeatherWidget';
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 
@@ -15,13 +16,16 @@ export default function Header() {
           <span className="text-xl font-bold text-gray-900 dark:text-white">News1</span>
         </Link>
 
-        <nav className="hidden md:flex gap-6 items-center">
-          <Link href="/category/finance" className="text-gray-700 dark:text-gray-300 hover:text-blue-600">Финансы</Link>
-          <Link href="/category/sport" className="text-gray-700 dark:text-gray-300 hover:text-blue-600">Спорт</Link>
-          <Link href="/category/it" className="text-gray-700 dark:text-gray-300 hover:text-blue-600">IT</Link>
-          <Link href="/category/kazakhstan" className="text-gray-700 dark:text-gray-300 hover:text-blue-600">Казахстан</Link>
+        <div className="hidden md:flex items-center gap-6">
+          <nav className="flex gap-6 items-center">
+            <Link href="/category/finance" className="text-gray-700 dark:text-gray-300 hover:text-blue-600">Финансы</Link>
+            <Link href="/category/sport" className="text-gray-700 dark:text-gray-300 hover:text-blue-600">Спорт</Link>
+            <Link href="/category/it" className="text-gray-700 dark:text-gray-300 hover:text-blue-600">IT</Link>
+            <Link href="/category/kazakhstan" className="text-gray-700 dark:text-gray-300 hover:text-blue-600">Казахстан</Link>
+          </nav>
+          <WeatherWidget />
           <ThemeToggle />
-        </nav>
+        </div>
 
         <div className="md:hidden flex items-center gap-2">
           <ThemeToggle />
