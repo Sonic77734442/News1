@@ -9,6 +9,7 @@ import Footer from '@/components/Footer';
 import Sidebar from '@/components/Sidebar';
 import PostCard from '@/components/PostCard';
 import { sanity, fetchCategoryPosts } from '@/lib/sanity';
+import sanityImageLoader from '@/lib/sanityImageLoader'; // 👈 добавили кастомный loader
 
 const categories = [
   { title: 'Финансы', slug: 'finance' },
@@ -54,10 +55,12 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
                 <Link href={`/article/${featuredPost.slug.current}`} className="flex-1">
                   <div className="relative w-full h-full min-h-[220px]">
                     <Image
+                      loader={sanityImageLoader}
                       src={featuredPost.mainImage.asset.url}
                       alt={featuredPost.title}
                       fill
                       priority
+                      quality={75}
                       className="object-cover opacity-80 rounded-lg"
                     />
                     <div className="absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-black/60 to-transparent text-white">
@@ -127,7 +130,6 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
   );
 }
 
-// ⚠️ теперь getServerSideProps вместо getStaticProps
 export const getServerSideProps: GetServerSideProps = async () => {
   const featuredQuery = `
     *[_type == "post" && featured == true] | order(publishedAt desc)[0] {
