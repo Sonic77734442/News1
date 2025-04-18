@@ -1,6 +1,6 @@
 // pages/api/ping.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { pingSearchEngines } from '@/utils/ping-google.ts';
+import { pingSearchEngines } from '@/utils/ping-google';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
