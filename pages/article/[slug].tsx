@@ -19,7 +19,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
   return {
     paths,
-    fallback: 'blocking', // ✅ Обязательно для генерации новых slug
+    fallback: 'blocking',
   };
 };
 
@@ -40,8 +40,14 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 };
 
 export default function ArticlePage({ article }: { article: any }) {
-  const metaDescription = typeof article.body === 'string'
-    ? article.body.slice(0, 150)
+  const metaDescription = Array.isArray(article.body)
+    ? article.body
+        .filter((block: any) => block._type === 'block' && Array.isArray(block.children))
+        .map((block: any) =>
+          block.children.map((child: any) => child.text).join('')
+        )
+        .join(' ')
+        .slice(0, 150)
     : 'Описание недоступно';
 
   return (
@@ -54,6 +60,37 @@ export default function ArticlePage({ article }: { article: any }) {
         <meta property="og:image" content={article?.mainImage?.asset?.url || ''} />
         <meta property="og:url" content={`https://www.news1.kz/article/${article?.slug?.current}`} />
         <meta property="og:type" content="article" />
+
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "NewsArticle",
+            "headline": article?.title,
+            "image": [article?.mainImage?.asset?.url],
+            "datePublished": article?.publishedAt,
+            "dateModified": article?.updatedAt || article?.publishedAt,
+            "author": {
+              "@type": "Person",
+              "name": article?.author?.name || "News1.kz"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "News1.kz",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://news1.kz/logo.png"
+              }
+            },
+            "description": metaDescription,
+            "mainEntityOfPage": {
+              "@type": "WebPage",
+              "@id": `https://www.news1.kz/article/${article?.slug?.current}`
+            }
+          })}
+        </script>
       </Head>
 
       <Header />
