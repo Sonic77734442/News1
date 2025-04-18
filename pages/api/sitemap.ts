@@ -1,64 +1,60 @@
+// pages/api/sitemap.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { sanity } from '@/lib/sanity';
-import { getAllSlugs } from '@/lib/queries';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log('🟢 Sitemap handler triggered');
+  const baseUrl = 'https://news1.kz';
 
-  try {
-    const baseUrl = 'https://news1.kz';
-
-    const staticPages = [
-      '',
-      '/category/finance',
-      '/category/sport',
-      '/category/it',
-      '/category/kazakhstan',
-    ];
-
-    // 🧱 Запрашиваем статьи из Sanity
-    let slugs: { slug?: string }[] = [];
-    try {
-      const sanityData = await sanity.fetch(getAllSlugs());
-      slugs = Array.isArray(sanityData) ? sanityData : [];
-    } catch (err) {
-      console.warn('⚠️ Sanity fetch failed:', err);
+  const postQuery = `
+    *[_type == "post"]{
+      slug,
+      _updatedAt
     }
+  `;
 
-    const staticUrls = staticPages.map(
-      (path) =>
-        `<url><loc>${baseUrl}${path}</loc><changefreq>hourly</changefreq></url>`
-    );
+  const categoryQuery = `
+    *[_type == "category"]{
+      slug,
+      _updatedAt
+    }
+  `;
 
-    const articleUrls = slugs
-      .filter((item) => typeof item?.slug === 'string')
-      .map(
-        (item) =>
-          `<url><loc>${baseUrl}/article/${item.slug}</loc><changefreq>daily</changefreq></url>`
-      );
+  const [posts, categories] = await Promise.all([
+    sanity.fetch(postQuery),
+    sanity.fetch(categoryQuery)
+  ]);
 
-    const sitemapParts = [
-      '<?xml version="1.0" encoding="UTF-8"?>',
-      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-      ...staticUrls,
-      ...articleUrls,
-      '</urlset>',
-    ];
+  const staticRoutes = [
+    { url: '', updated: new Date().toISOString() },
+  ];
 
-    const sitemap = sitemapParts.join('\n');
+  const postRoutes = posts.map((post: any) => ({
+    url: `article/${post.slug.current}`,
+    updated: post._updatedAt,
+  }));
 
-    res.setHeader('Content-Type', 'application/xml');
-    res.setHeader('Cache-Control', 'no-store');
-    res.status(200).send(sitemap);
-  } catch (error) {
-    console.error('❌ Sitemap generation error:', error);
+  const categoryRoutes = categories.map((cat: any) => ({
+    url: `category/${cat.slug.current}`,
+    updated: cat._updatedAt,
+  }));
 
-    const fallback = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://news1.kz/</loc><changefreq>hourly</changefreq></url>
-</urlset>`;
+  const allRoutes = [...staticRoutes, ...postRoutes, ...categoryRoutes];
 
-    res.setHeader('Content-Type', 'application/xml');
-    res.status(200).send(fallback);
-  }
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      ${allRoutes
+        .map(
+          ({ url, updated }) => `
+        <url>
+          <loc>${baseUrl}/${url}</loc>
+          <lastmod>${new Date(updated).toISOString()}</lastmod>
+          <changefreq>daily</changefreq>
+          <priority>${url === '' ? '1.0' : '0.8'}</priority>
+        </url>`
+        )
+        .join('')}
+    </urlset>`;
+
+  res.setHeader('Content-Type', 'text/xml');
+  res.status(200).end(sitemap);
 }
