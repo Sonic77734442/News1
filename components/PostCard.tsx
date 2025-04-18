@@ -1,23 +1,28 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import sanityImageLoader from '@/lib/sanityImageLoader'; // 👈 импорт кастомного loader
+import sanityImageLoader from '@/lib/sanityImageLoader';
 
 type PostCardProps = {
   post: {
-    title: string;
-    slug: { current: string };
-    publishedAt: string;
-    mainImage?: { asset?: { url: string } };
+    title?: string;
+    slug?: { current?: string };
+    publishedAt?: string;
+    mainImage?: { asset?: { url?: string } };
     description?: string;
-    author?: { name: string };
-    category?: { slug: { current: string } };
+    author?: { name?: string };
+    category?: { slug?: { current?: string } };
   };
   categoryLabel?: string;
   forceHeight?: boolean;
 };
 
 export default function PostCard({ post, categoryLabel, forceHeight = false }: PostCardProps) {
+  if (!post || !post.slug?.current || !post.title) {
+    console.warn('PostCard: Недопустимый объект поста:', post);
+    return null;
+  }
+
   const imageUrl = post.mainImage?.asset?.url;
 
   return (
@@ -30,6 +35,7 @@ export default function PostCard({ post, categoryLabel, forceHeight = false }: P
               src={imageUrl}
               alt={post.title}
               fill
+              sizes="(max-width: 768px) 100vw, 33vw"
               quality={75}
               className="object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out"
             />
@@ -42,9 +48,11 @@ export default function PostCard({ post, categoryLabel, forceHeight = false }: P
               {categoryLabel}
             </span>
           )}
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            {new Date(post.publishedAt).toLocaleDateString()}
-          </span>
+          {post.publishedAt && (
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {new Date(post.publishedAt).toLocaleDateString()}
+            </span>
+          )}
           <h3 className="text-lg font-semibold leading-snug text-gray-900 dark:text-white group-hover:underline line-clamp-2">
             {post.title}
           </h3>
