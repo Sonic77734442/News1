@@ -40,6 +40,36 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
       <Head>
         <title>News1.kz – Последние новости</title>
         <meta name="description" content="Читайте свежие новости Казахстана, Финансы, Спорт и IT" />
+        <meta property="og:title" content="News1.kz – Последние новости" />
+        <meta property="og:description" content="Актуальные события Казахстана: политика, экономика, спорт, IT." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://news1.kz/" />
+        <meta property="og:image" content="https://news1.kz/default-preview.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "url": "https://news1.kz/",
+            "name": "News1.kz",
+            "description": "Свежие новости Казахстана: Финансы, Спорт, IT, общество и политика.",
+            "publisher": {
+              "@type": "Organization",
+              "name": "News1.kz",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://news1.kz/logo.png"
+              }
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://news1.kz/search?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          })}
+        </script>
       </Head>
 
       <Header />
@@ -47,8 +77,6 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
 
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
         <div className="lg:col-span-3 space-y-10">
-
-          {/* 🔝 Hero-блок */}
           {featuredPost && (
             <section className="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-[320px]">
               <div className="md:col-span-2 h-full bg-blue-950 text-white rounded-lg overflow-hidden relative flex flex-col">
@@ -70,7 +98,6 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
                   </div>
                 </Link>
               </div>
-
               {Array.isArray(latestPosts) && latestPosts[0] && (
                 <div className="h-full">
                   <PostCard post={latestPosts[0]} forceHeight />
@@ -79,7 +106,6 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
             </section>
           )}
 
-          {/* 💬 2–4 свежих поста */}
           <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {Array.isArray(latestPosts) &&
               latestPosts.slice(1, 4).map((post: any) => (
@@ -87,7 +113,6 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
               ))}
           </section>
 
-          {/* 🔎 Поиск */}
           <form className="flex flex-wrap gap-2">
             <input
               type="text"
@@ -102,7 +127,6 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
             </button>
           </form>
 
-          {/* 🗂️ Категории */}
           <section className="space-y-12">
             {categories.map((cat) => (
               <div key={cat.slug} className="space-y-4">
@@ -121,7 +145,6 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
             ))}
           </section>
         </div>
-
         <Sidebar />
       </div>
 
