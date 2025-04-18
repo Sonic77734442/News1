@@ -12,6 +12,7 @@ type PostCardProps = {
     description?: string;
     author?: { name?: string };
     category?: { slug?: { current?: string } };
+    _id?: string;
   };
   categoryLabel?: string;
   forceHeight?: boolean;
@@ -24,16 +25,17 @@ export default function PostCard({ post, categoryLabel, forceHeight = false }: P
   }
 
   const imageUrl = post.mainImage?.asset?.url;
+  const altText = post.title || 'Новость';
 
   return (
     <Link href={`/article/${post.slug.current}`}>
       <article className="h-full flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-sm md:hover:shadow-lg transition overflow-hidden group">
-        {imageUrl && (
+        {typeof imageUrl === 'string' && imageUrl.length > 0 && (
           <div className="aspect-[16/9] relative overflow-hidden">
             <Image
               loader={sanityImageLoader}
               src={imageUrl}
-              alt={post.title}
+              alt={altText}
               fill
               sizes="(max-width: 768px) 100vw, 33vw"
               quality={75}
