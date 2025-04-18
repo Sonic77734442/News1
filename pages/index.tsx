@@ -44,7 +44,7 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
         <meta property="og:description" content="Новости Казахстана каждый день – экономика, политика, спорт, финансы и технологии. Будьте в курсе главных событий страны с News1.kz." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://news1.kz/" />
-        <meta property="og:image" content="https://news1.kz/default-preview.jpg" />
+        <meta property="og:image" content="https://news1.kz/default-preview.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
 
