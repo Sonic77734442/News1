@@ -39,6 +39,7 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
       <Head>
         <title>News1.kz – Последние новости</title>
+        <link rel="canonical" href="https://news1.kz/" />
         <meta name="description" content="Новости Казахстана каждый день – экономика, политика, спорт, финансы и технологии. Будьте в курсе главных событий страны с News1.kz." />
         <meta property="og:title" content="News1.kz – Последние новости" />
         <meta property="og:description" content="Новости Казахстана каждый день – экономика, политика, спорт, финансы и технологии. Будьте в курсе главных событий страны с News1.kz." />
@@ -48,27 +49,44 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
 
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="News1.kz – Последние новости Казахстана" />
+        <meta name="twitter:description" content="Новости Казахстана каждый день – политика, экономика, спорт и технологии." />
+        <meta name="twitter:image" content="https://news1.kz/default-preview.png" />
+
         <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            "url": "https://news1.kz/",
-            "name": "News1.kz",
-            "description": "Новости Казахстана каждый день – экономика, политика, спорт, финансы и технологии. Будьте в курсе главных событий страны с News1.kz.",
-            "publisher": {
-              "@type": "Organization",
+          {JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "url": "https://news1.kz/",
               "name": "News1.kz",
-              "logo": {
-                "@type": "ImageObject",
-                "url": "https://news1.kz/logo.png"
+              "description": "Новости Казахстана каждый день – экономика, политика, спорт, финансы и технологии. Будьте в курсе главных событий страны с News1.kz.",
+              "publisher": {
+                "@type": "Organization",
+                "name": "News1.kz",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://news1.kz/logo.png"
+                }
+              },
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://news1.kz/search?q={search_term_string}",
+                "query-input": "required name=search_term_string"
               }
             },
-            "potentialAction": {
-              "@type": "SearchAction",
-              "target": "https://news1.kz/search?q={search_term_string}",
-              "query-input": "required name=search_term_string"
+            {
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "News1.kz",
+              "url": "https://news1.kz",
+              "logo": "https://news1.kz/logo.png",
+              "sameAs": [
+                "https://facebook.com/news1.kz"
+              ]
             }
-          })}
+          ])}
         </script>
       </Head>
 
