@@ -95,23 +95,34 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
 
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
         <div className="lg:col-span-3 space-y-10">
-          {featuredPost && (
+          {featuredPost?.slug?.current && featuredPost?.mainImage?.asset?.url && (
             <section className="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-[320px]">
-              <div className="md:col-span-2 h-full bg-blue-950 text-white rounded-lg overflow-hidden relative flex flex-col">
-                <Link href={`/article/${featuredPost.slug.current}`} className="flex-1">
-                  <div className="relative w-full h-full min-h-[220px]">
+              <div className="md:col-span-2 h-full relative rounded-lg overflow-hidden">
+                <Link href={`/article/${featuredPost.slug.current}`} className="block w-full h-full">
+                  <div className="relative w-full h-full min-h-[240px]">
                     <Image
                       loader={sanityImageLoader}
                       src={featuredPost.mainImage.asset.url}
-                      alt={featuredPost.title}
+                      alt={featuredPost.title || 'Избранная новость'}
                       fill
                       priority
                       quality={75}
-                      className="object-cover opacity-80 rounded-lg"
+                      className="object-cover"
                     />
-                    <div className="absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-black/60 to-transparent text-white">
-                      <span className="text-sm mb-2">Сегодня</span>
-                      <h2 className="text-2xl font-bold leading-snug">{featuredPost.title}</h2>
+                    <div className="absolute inset-0 bg-black/50" />
+                    <div className="absolute bottom-0 left-0 right-0 p-6 z-10 text-white">
+                      <span className="text-xs mb-1 block opacity-80">Сегодня</span>
+                      <h2 className="text-2xl md:text-3xl font-bold leading-snug line-clamp-2">
+                        {featuredPost.title}
+                      </h2>
+                      {featuredPost.description && (
+                        <p className="mt-2 text-sm md:text-base line-clamp-2 text-gray-100">
+                          {featuredPost.description}
+                        </p>
+                      )}
+                      <span className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 transition px-4 py-2 rounded text-sm">
+                        Читать далее
+                      </span>
                     </div>
                   </div>
                 </Link>
