@@ -39,9 +39,9 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
       <Head>
         <title>News1.kz – Последние новости</title>
-        <meta name="description" content="Читайте свежие новости Казахстана, Финансы, Спорт и IT" />
+        <meta name="description" content="Новости Казахстана каждый день – экономика, политика, спорт, финансы и технологии. Будьте в курсе главных событий страны с News1.kz." />
         <meta property="og:title" content="News1.kz – Последние новости" />
-        <meta property="og:description" content="Актуальные события Казахстана: политика, экономика, спорт, IT." />
+        <meta property="og:description" content="Новости Казахстана каждый день – экономика, политика, спорт, финансы и технологии. Будьте в курсе главных событий страны с News1.kz." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://news1.kz/" />
         <meta property="og:image" content="https://news1.kz/default-preview.jpg" />
@@ -54,7 +54,7 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
             "@type": "WebSite",
             "url": "https://news1.kz/",
             "name": "News1.kz",
-            "description": "Свежие новости Казахстана: Финансы, Спорт, IT, общество и политика.",
+            "description": "Новости Казахстана каждый день – экономика, политика, спорт, финансы и технологии. Будьте в курсе главных событий страны с News1.kz.",
             "publisher": {
               "@type": "Organization",
               "name": "News1.kz",
