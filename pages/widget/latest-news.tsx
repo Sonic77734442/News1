@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { sanity } from '@/lib/sanity'
-import { getLatestNews } from '@/lib/queries' // создадим этот query
+import { getLatestNewsForWidget } from '@/lib/queries'
 
 export default function LatestNewsWidget() {
   const [articles, setArticles] = useState<any[]>([])
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await sanity.fetch(getLatestNews())
+      const data = await sanity.fetch(getLatestNewsForWidget())
       setArticles(data)
     }
     fetchData()
