@@ -1,13 +1,26 @@
 // pages/api/robots.ts
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next'
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  res.setHeader('Content-Type', 'text/plain');
+  res.setHeader('Content-Type', 'text/plain')
   res.write(`User-agent: *
 Allow: /
 
+Disallow: /?attachment_id
+Disallow: /?p=
+Disallow: /?paged=
+Disallow: /page/
+Disallow: /home-
+Disallow: /sample-page/
+Disallow: /author/
+Disallow: /tag/
+Disallow: /category/uncategorized/
+Disallow: /post-
+Disallow: /blog-
+
 Host: https://news1.kz
 Sitemap: https://news1.kz/sitemap.xml
-`);
-  res.end();
+`)
+  res.end()
 }
+
