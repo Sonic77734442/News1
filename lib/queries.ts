@@ -87,3 +87,12 @@ export const getAllPostsForRss = () => `
     "excerpt": pt::text(body)[0...150]
   }
 `;
+
+export const getLatestNewsForWidget = () => `
+  *[_type == "article"] | order(_createdAt desc)[0...5] {
+    _id,
+    title,
+    "slug": slug.current
+  }
+`
+
