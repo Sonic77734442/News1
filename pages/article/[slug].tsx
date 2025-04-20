@@ -23,7 +23,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const slug = params?.slug as string;
   const query = getArticleBySlug(slug);
 
@@ -35,7 +35,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   return {
     props: { article },
-    revalidate: 60,
   };
 };
 
