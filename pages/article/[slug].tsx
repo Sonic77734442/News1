@@ -10,19 +10,6 @@ import Footer from '@/components/Footer';
 import Sidebar from '@/components/Sidebar';
 import InfiniteArticleScroll from '@/components/InfiniteArticleScroll';
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  const slugs: { slug: string }[] = await sanity.fetch(getAllSlugs());
-
-  const paths = slugs.map(({ slug }) => ({
-    params: { slug },
-  }));
-
-  return {
-    paths,
-    fallback: 'blocking',
-  };
-};
-
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const slug = params?.slug as string;
   const query = getArticleBySlug(slug);
