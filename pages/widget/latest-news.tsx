@@ -16,22 +16,48 @@ export default function LatestNewsWidget() {
   }, [])
 
   return (
-    <div style={{ fontFamily: 'Arial', fontSize: 13, padding: 10, width: 300, background: '#fff', color: '#000' }}>
-      <h3 style={{ marginBottom: 10, fontSize: 16 }}>Последние новости</h3>
-      <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-        {articles.map((item) => (
-          <li key={item._id} style={{ marginBottom: 6 }}>
-            <a
-              href={`https://news1.kz/article/${item.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ textDecoration: 'none', color: '#1a0dab' }}
-            >
-              {item.title}
-            </a>
-          </li>
-        ))}
-      </ul>
+    <div
+      style={{
+        fontFamily: 'Arial',
+        padding: 10,
+        background: '#fff',
+        color: '#000',
+        overflowX: 'auto',
+        display: 'flex',
+        gap: 12,
+        scrollbarWidth: 'none',
+      }}
+    >
+      {articles.map((item) => (
+        <a
+          key={item._id}
+          href={`https://news1.kz/article/${item.slug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            flex: '0 0 auto',
+            width: 200,
+            borderRadius: 8,
+            background: '#f8f8f8',
+            textDecoration: 'none',
+            color: '#000',
+            boxShadow: '0 0 5px rgba(0,0,0,0.1)',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {item.image && (
+            <img
+              src={item.image}
+              alt={item.title}
+              style={{ width: '100%', height: 100, objectFit: 'cover' }}
+            />
+          )}
+          <div style={{ padding: '8px', fontSize: 13 }}>{item.title}</div>
+        </a>
+      ))}
     </div>
   )
 }
+

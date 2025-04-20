@@ -89,10 +89,12 @@ export const getAllPostsForRss = () => `
 `;
 
 export const getLatestNewsForWidget = () => `
-  *[_type == "post"] | order(_createdAt desc)[0...5] {
+  *[_type == "post"] | order(_createdAt desc)[0...10] {
     _id,
     title,
-    "slug": slug.current
+    "slug": slug.current,
+    "image": mainImage.asset->url
   }
 `
+
 
