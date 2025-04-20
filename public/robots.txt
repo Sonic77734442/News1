@@ -1,4 +1,0 @@
-User-agent: *
-Disallow:
-
-Sitemap: https://news1.kz/sitemap.xml
