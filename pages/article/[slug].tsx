@@ -1,6 +1,6 @@
 // pages/article/[slug].tsx
 
-import { GetStaticPaths, GetStaticProps } from 'next';
+import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { sanity } from '@/lib/sanity';
 import { getArticleBySlug, getAllSlugs } from '@/lib/queries';
