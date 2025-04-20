@@ -189,22 +189,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   );
 
   const featuredQuery = `
-    *[_type == "post" && featured == true] | order(publishedAt desc)[0] {
+    *[_type == "post" && featured == true && !(_id in path("drafts.**"))] 
+    | order(publishedAt desc)[0] {
       _id, title, slug, publishedAt, description,
       mainImage { asset -> { url } }
     }
   `;
   const featuredPost = await sanity.fetch(featuredQuery).catch(() => null);
 
-const recentPostsQuery = `
-  *[_type == "post" && !(_id in path("drafts.**"))] 
-  | order(publishedAt desc)[0...6] {
-    _id, title, slug, publishedAt, description,
-    mainImage { asset -> { url } },
-    category -> { title, slug }
-  }
-`;
-
+  const recentPostsQuery = `
+    *[_type == "post" && !(_id in path("drafts.**"))] 
+    | order(publishedAt desc)[0...6] {
+      _id, title, slug, publishedAt, description,
+      mainImage { asset -> { url } },
+      category -> { title, slug }
+    }
+  `;
   const recentPosts = await sanity.fetch(recentPostsQuery).catch(() => []);
 
   const categoryPosts: Record<string, any[]> = {};
