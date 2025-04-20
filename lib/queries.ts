@@ -89,7 +89,7 @@ export const getAllPostsForRss = () => `
 `;
 
 export const getLatestNewsForWidget = () => `
-  *[_type == "article"] | order(_createdAt desc)[0...5] {
+  *[_type == "post"] | order(_createdAt desc)[0...5] {
     _id,
     title,
     "slug": slug.current
