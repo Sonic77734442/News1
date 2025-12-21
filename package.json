@@ -13,7 +13,7 @@
     "@sanity/client": "^6.28.4",
     "@sanity/image-url": "^1.1.0",
     "lucide-react": "^0.484.0",
-    "next": "^15.2.4",
+    "next": "15.2.8",
     "next-sanity": "^9.10.2",
     "next-themes": "^0.4.6",
     "react": "^19.0.0",
