@@ -46,7 +46,9 @@ export default function PostCard({ post, categoryLabel, forceHeight = false }: P
 
         <div className="p-5 flex flex-col flex-1 justify-between gap-2">
           {categoryLabel && (
-            <span className="text-xs uppercase font-semibold text-red-600">{categoryLabel}</span>
+            <span className="text-xs uppercase font-semibold text-red-700 dark:text-red-400">
+              {categoryLabel}
+            </span>
           )}
           {post.publishedAt && (
             <span className="text-sm text-gray-500 dark:text-gray-400">

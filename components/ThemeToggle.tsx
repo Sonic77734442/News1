@@ -18,12 +18,13 @@ export default function ThemeSwitcher() {
     <div className="flex items-center gap-2">
       <Sun className={`w-5 h-5 ${!isDark ? "opacity-100" : "opacity-40"} transition-opacity`} />
       
-      <label className="relative inline-block w-10 h-5 cursor-pointer">
+      <label className="relative inline-block w-10 h-5 cursor-pointer" aria-label="Переключить тему">
         <input
           type="checkbox"
           checked={isDark}
           onChange={() => setTheme(isDark ? "light" : "dark")}
           className="sr-only peer"
+          aria-label="Переключить тему"
         />
         <div className="bg-gray-400 peer-checked:bg-black dark:bg-gray-600 rounded-full w-full h-full transition-colors" />
         <div
