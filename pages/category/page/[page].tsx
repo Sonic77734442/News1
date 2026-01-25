@@ -108,6 +108,21 @@ export default function CategoryPagePaginated({
         <link rel="canonical" href={`https://news1.kz${basePath}/page/${page}`} />
         {page > 1 && <link rel="prev" href={`https://news1.kz${basePath}/page/${page - 1}`} />}
         {hasMore && <link rel="next" href={`https://news1.kz${basePath}/page/${page + 1}`} />}
+
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: title,
+            url: `https://news1.kz${basePath}/page/${page}`,
+            description: `Свежие новости категории ${slug}, страница ${page}`,
+            isPartOf: {
+              '@type': 'WebSite',
+              name: 'News1.kz',
+              url: 'https://news1.kz',
+            },
+          })}
+        </script>
       </Head>
 
       <Header />

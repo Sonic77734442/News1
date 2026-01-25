@@ -54,6 +54,21 @@ export default function SportDashboard() {
         <meta name="twitter:image" content="https://news1.kz/default-preview.png" />
 
         <link rel="canonical" href="https://news1.kz/category/sports/dashboard" />
+
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: 'Спортивный дашборд',
+            url: 'https://news1.kz/category/sports/dashboard',
+            description: 'Актуальные матчи и последние новости спорта.',
+            isPartOf: {
+              '@type': 'WebSite',
+              name: 'News1.kz',
+              url: 'https://news1.kz',
+            },
+          })}
+        </script>
       </Head>
       <Header />
 

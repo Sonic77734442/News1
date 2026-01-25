@@ -107,6 +107,21 @@ export default function CategoryPage() {
         <meta name="twitter:image" content="https://news1.kz/default-preview.png" />
 
         <link rel="canonical" href={`https://news1.kz/category/${slug}`} />
+
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: `Категория: ${slug}`,
+            url: `https://news1.kz/category/${slug}`,
+            description: `Свежие новости категории ${slug}`,
+            isPartOf: {
+              '@type': 'WebSite',
+              name: 'News1.kz',
+              url: 'https://news1.kz',
+            },
+          })}
+        </script>
       </Head>
 
       <Header />
