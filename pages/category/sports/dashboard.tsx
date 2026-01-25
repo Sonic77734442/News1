@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useEffect, useState } from 'react';
@@ -37,6 +38,23 @@ export default function SportDashboard() {
 
   return (
     <div className="bg-white dark:bg-gray-900 text-black dark:text-white min-h-screen flex flex-col">
+      <Head>
+        <title>Спортивный дашборд – News1.kz</title>
+        <meta name="description" content="Актуальные матчи и последние новости спорта." />
+        <meta property="og:title" content="Спортивный дашборд – News1.kz" />
+        <meta property="og:description" content="Актуальные матчи и последние новости спорта." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://news1.kz/category/sports/dashboard" />
+        <meta property="og:image" content="https://news1.kz/default-preview.png" />
+        <meta property="og:site_name" content="News1.kz" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Спортивный дашборд – News1.kz" />
+        <meta name="twitter:description" content="Актуальные матчи и последние новости спорта." />
+        <meta name="twitter:image" content="https://news1.kz/default-preview.png" />
+
+        <link rel="canonical" href="https://news1.kz/category/sports/dashboard" />
+      </Head>
       <Header />
 
       <main className="container mx-auto px-4 py-8 flex-1">

@@ -87,6 +87,24 @@ export default function CategoryPagePaginated({
           name="description"
           content={`Свежие новости категории ${slug}, страница ${page}`}
         />
+        <meta property="og:title" content={title} />
+        <meta
+          property="og:description"
+          content={`Свежие новости категории ${slug}, страница ${page}`}
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`https://news1.kz${basePath}/page/${page}`} />
+        <meta property="og:image" content="https://news1.kz/default-preview.png" />
+        <meta property="og:site_name" content="News1.kz" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta
+          name="twitter:description"
+          content={`Свежие новости категории ${slug}, страница ${page}`}
+        />
+        <meta name="twitter:image" content="https://news1.kz/default-preview.png" />
+
         <link rel="canonical" href={`https://news1.kz${basePath}/page/${page}`} />
         {page > 1 && <link rel="prev" href={`https://news1.kz${basePath}/page/${page - 1}`} />}
         {hasMore && <link rel="next" href={`https://news1.kz${basePath}/page/${page + 1}`} />}

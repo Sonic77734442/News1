@@ -99,6 +99,14 @@ export default function CategoryPage() {
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`https://news1.kz/category/${slug}`} />
         <meta property="og:image" content="https://news1.kz/default-preview.png" />
+        <meta property="og:site_name" content="News1.kz" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`Категория: ${slug} – News1.kz`} />
+        <meta name="twitter:description" content={`Свежие новости категории ${slug}`} />
+        <meta name="twitter:image" content="https://news1.kz/default-preview.png" />
+
+        <link rel="canonical" href={`https://news1.kz/category/${slug}`} />
       </Head>
 
       <Header />
