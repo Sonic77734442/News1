@@ -1,11 +1,33 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 
 export default function TickerTape() {
   const { theme } = useTheme();
+  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('ticker-enabled');
+      if (saved === 'true') setEnabled(true);
+    } catch {
+      setEnabled(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('ticker-enabled', enabled ? 'true' : 'false');
+    } catch {}
+  }, [enabled]);
+
+  useEffect(() => {
+    if (!enabled) {
+      const container = document.getElementById('ticker-tape-widget');
+      if (container) container.innerHTML = '';
+      return;
+    }
+
     const loadWidget = () => {
       const container = document.getElementById('ticker-tape-widget');
       if (container) container.innerHTML = '';
@@ -38,10 +60,31 @@ export default function TickerTape() {
     } else {
       setTimeout(loadWidget, 1200);
     }
-  }, [theme]);
+
+    const onPageHide = () => {
+      const container = document.getElementById('ticker-tape-widget');
+      if (container) container.innerHTML = '';
+    };
+    window.addEventListener('pagehide', onPageHide);
+    return () => window.removeEventListener('pagehide', onPageHide);
+  }, [theme, enabled]);
 
   return (
     <div className="bg-white dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 py-2 px-4">
+      {!enabled && (
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-gray-600 dark:text-gray-300">
+            Котировки загружаются по запросу
+          </span>
+          <button
+            type="button"
+            onClick={() => setEnabled(true)}
+            className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+          >
+            Показать котировки
+          </button>
+        </div>
+      )}
       <div id="ticker-tape-widget" className="overflow-hidden" />
     </div>
   );
