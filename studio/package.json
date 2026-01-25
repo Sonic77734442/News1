@@ -10,7 +10,8 @@
     "build": "sanity build",
     "deploy": "sanity deploy",
     "deploy-graphql": "sanity graphql deploy",
-    "migrate:ad-banners": "node ./scripts/migrate-ad-banners.js"
+    "migrate:ad-banners": "node ./scripts/migrate-ad-banners.js",
+    "notify:telegram": "node ./scripts/notify-telegram.js"
   },
   "keywords": [
     "sanity"
