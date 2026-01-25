@@ -29,7 +29,7 @@ export default function CategoryPage() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
-  const loaderRef = useRef(null);
+  const loaderRef = useRef<HTMLDivElement | null>(null);
 
   const loadPosts = async (reset = false) => {
     if (!slug || typeof slug !== 'string' || loading) return;
@@ -48,12 +48,10 @@ export default function CategoryPage() {
       return;
     }
 
-    const newUnique = newPosts.filter((post) =>
-      !posts.some((p) => p._id === post._id)
-    );
+    const newUnique = newPosts.filter((post) => !posts.some((p) => p._id === post._id));
 
-    setPosts((prev) => reset ? newUnique : [...prev, ...newUnique]);
-    setPage((prev) => reset ? 1 : prev + 1);
+    setPosts((prev) => (reset ? newUnique : [...prev, ...newUnique]));
+    setPage((prev) => (reset ? 1 : prev + 1));
 
     if (newPosts.length < pageSize) {
       setHasMore(false);
@@ -62,17 +60,15 @@ export default function CategoryPage() {
     setLoading(false);
   };
 
-  // Загружаем при первом монтировании или изменении slug
   useEffect(() => {
     if (typeof slug === 'string') {
       setPosts([]);
       setPage(0);
       setHasMore(true);
-      loadPosts(true); // сбрасываем страницу и подгружаем заново
+      loadPosts(true);
     }
   }, [slug]);
 
-  // Infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -96,13 +92,13 @@ export default function CategoryPage() {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
       <Head>
-        <title>{`Категория: ${slug} – NewsSite.kz`}</title>
+        <title>{`Категория: ${slug} – News1.kz`}</title>
         <meta name="description" content={`Свежие новости категории ${slug}`} />
-        <meta property="og:title" content={`Категория: ${slug} – NewsSite.kz`} />
+        <meta property="og:title" content={`Категория: ${slug} – News1.kz`} />
         <meta property="og:description" content={`Читайте последние новости в категории ${slug}`} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://newssite.kz/category/${slug}`} />
-        <meta property="og:image" content="/cloud.jpg" />
+        <meta property="og:url" content={`https://news1.kz/category/${slug}`} />
+        <meta property="og:image" content="https://news1.kz/default-preview.png" />
       </Head>
 
       <Header />

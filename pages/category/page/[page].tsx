@@ -1,6 +1,5 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
-import { useRouter } from 'next/router';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Sidebar from '@/components/Sidebar';
@@ -22,14 +21,12 @@ type PostType = {
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  // Загружаем все slug категорий
   const categorySlugs: { slug: string }[] = await sanity.fetch(`
     *[_type == "category"]{ "slug": slug.current }
   `);
 
   const paths: { params: { slug: string; page: string } }[] = [];
 
-  // Для каждой категории делаем по 3 страницы-заглушки (можно больше)
   for (const { slug } of categorySlugs) {
     for (let i = 1; i <= 3; i++) {
       paths.push({ params: { slug, page: i.toString() } });
@@ -46,7 +43,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const slug = params?.slug as string | undefined;
   const page = parseInt(params?.page as string) || 1;
 
-  // Если slug по какой-то причине не пришёл — отдать 404
   if (!slug) {
     return {
       notFound: true,
@@ -80,7 +76,6 @@ export default function CategoryPagePaginated({
   page: number;
   hasMore: boolean;
 }) {
-  const router = useRouter();
   const basePath = `/category/${slug}`;
   const title = `Категория: ${slug} – страница ${page}`;
 
@@ -88,14 +83,13 @@ export default function CategoryPagePaginated({
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
       <Head>
         <title>{title}</title>
-        <meta name="description" content={`Свежие новости категории ${slug}, страница ${page}`} />
-        <link rel="canonical" href={`https://newssite.kz${basePath}/page/${page}`} />
-        {page > 1 && (
-          <link rel="prev" href={`https://newssite.kz${basePath}/page/${page - 1}`} />
-        )}
-        {hasMore && (
-          <link rel="next" href={`https://newssite.kz${basePath}/page/${page + 1}`} />
-        )}
+        <meta
+          name="description"
+          content={`Свежие новости категории ${slug}, страница ${page}`}
+        />
+        <link rel="canonical" href={`https://news1.kz${basePath}/page/${page}`} />
+        {page > 1 && <link rel="prev" href={`https://news1.kz${basePath}/page/${page - 1}`} />}
+        {hasMore && <link rel="next" href={`https://news1.kz${basePath}/page/${page + 1}`} />}
       </Head>
 
       <Header />
@@ -113,18 +107,12 @@ export default function CategoryPagePaginated({
 
           <div className="flex justify-between mt-8 text-sm">
             {page > 1 && (
-              <a
-                href={`${basePath}/page/${page - 1}`}
-                className="text-blue-500 hover:underline"
-              >
+              <a href={`${basePath}/page/${page - 1}`} className="text-blue-500 hover:underline">
                 ← Назад
               </a>
             )}
             {hasMore && (
-              <a
-                href={`${basePath}/page/${page + 1}`}
-                className="text-blue-500 hover:underline ml-auto"
-              >
+              <a href={`${basePath}/page/${page + 1}`} className="text-blue-500 hover:underline ml-auto">
                 Далее →
               </a>
             )}

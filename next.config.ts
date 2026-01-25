@@ -6,6 +6,19 @@ const nextConfig: NextConfig = {
     domains: ['cdn.sanity.io'],
     formats: ['image/webp'],
   },
+  async headers() {
+    return [
+      {
+        source: '/widget/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: 'frame-ancestors *',
+          },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return [
       { source: '/sitemap.xml', destination: '/api/sitemap' },
@@ -13,20 +26,5 @@ const nextConfig: NextConfig = {
     ];
   },
 };
-
-// 👇 Добавляем функцию headers отдельно, вне nextConfig
-export async function headers() {
-  return [
-    {
-      source: '/widget/:path*',
-      headers: [
-        {
-          key: 'X-Frame-Options',
-          value: 'ALLOWALL',
-        },
-      ],
-    },
-  ];
-}
 
 export default nextConfig;

@@ -1,12 +1,11 @@
-import { createClient } from '@sanity/client'
+import { createClient } from '@sanity/client';
 
 export const sanity = createClient({
-  projectId: '8kp3qa75',               // 🔒 Хардкодим ID
-  dataset: 'production',              // 🔒 Только строчные буквы!
-  apiVersion: '2023-03-01',           // 🔒 Формат YYYY-MM-DD
+  projectId: '8kp3qa75',
+  dataset: 'production',
+  apiVersion: '2023-03-01',
   useCdn: true,
-})
-
+});
 
 export async function fetchCategoryPosts(slug: string, start = 0, end = 6) {
   const query = `
@@ -21,14 +20,13 @@ export async function fetchCategoryPosts(slug: string, start = 0, end = 6) {
           url
         }
       },
-      description,
+      "description": coalesce(description, shortDescription),
       category -> {
         title,
         slug
       }
     }
-  `
+  `;
 
-  return await sanity.fetch(query, { slug })
+  return await sanity.fetch(query, { slug });
 }
-console.log('DATASET:', process.env.NEXT_PUBLIC_SANITY_DATASET)

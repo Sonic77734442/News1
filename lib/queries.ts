@@ -16,7 +16,7 @@ export const getArticleBySlug = (slug: string) => `
       asset -> { url }
     },
     body,
-    description,
+    "description": coalesce(description, shortDescription),
     author->{name},
     category->{title, slug}
   }
@@ -41,14 +41,13 @@ export const fetchCategoryPosts = (
     mainImage {
       asset -> { url }
     },
-    body,
-    description,
+    "description": coalesce(description, shortDescription),
     author->{name},
     category->{title, slug}
   }
 `;
 
-// 🔄 Добавлено: запрос для бесконечной прокрутки на странице статьи
+// Добавлено: запрос для бесконечной прокрутки на странице статьи
 export const getArticlesByCategory = (
   categorySlug: string,
   excludeSlug: string,
@@ -70,17 +69,14 @@ export const getArticlesByCategory = (
     mainImage {
       asset -> { url }
     },
-    body,
-    description,
+    "description": coalesce(description, shortDescription),
     author->{name},
     category->{title, slug}
   }
 `;
 
-
-
 export const getAllPostsForRss = () => `
-  *[_type == "article" && defined(slug.current)] | order(_createdAt desc)[0...20] {
+  *[_type == "post" && defined(slug.current)] | order(_createdAt desc)[0...20] {
     title,
     "slug": slug.current,
     _createdAt,
@@ -95,6 +91,4 @@ export const getLatestNewsForWidget = () => `
     "slug": slug.current,
     "image": mainImage.asset->url
   }
-`
-
-
+`;

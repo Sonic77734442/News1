@@ -1,6 +1,6 @@
 import { defineConfig } from 'sanity'
 import { structureTool } from 'sanity/structure'
-// import { visionTool } from '@sanity/vision' // временно отключено
+import { visionTool } from '@sanity/vision'
 import { schemaTypes } from './schemaTypes'
 
 export default defineConfig({
@@ -12,7 +12,7 @@ export default defineConfig({
 
   plugins: [
     structureTool(),
-    // visionTool(), // отключено для сборки
+    visionTool(),
   ],
 
   schema: {

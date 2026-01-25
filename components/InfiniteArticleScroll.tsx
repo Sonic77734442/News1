@@ -1,6 +1,6 @@
 // components/InfiniteArticleScroll.tsx
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import FullArticle from './FullArticle';
 import type { PortableTextBlock } from 'sanity';
 import { sanity } from '@/lib/sanity';
@@ -9,7 +9,7 @@ import { getArticlesByCategory } from '@/lib/queries';
 export type ArticleType = {
   _id: string;
   title: string;
-  slug: { current: string };
+  slug?: { current?: string };
   publishedAt: string;
   author?: { name: string };
   category?: { slug: { current: string }; title?: string };
@@ -31,11 +31,22 @@ export default function InfiniteArticleScroll({
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const loaderRef = useRef<HTMLDivElement | null>(null);
+  const pageRef = useRef(0);
 
-  const loadArticles = async () => {
+  useEffect(() => {
+    pageRef.current = page;
+  }, [page]);
+
+  useEffect(() => {
+    setArticles([]);
+    setPage(0);
+    setHasMore(true);
+  }, [categorySlug, excludeSlug]);
+
+  const loadArticles = useCallback(async () => {
     if (!categorySlug) return;
 
-    const start = page * pageSize;
+    const start = pageRef.current * pageSize;
     const end = start + pageSize;
 
     const query = getArticlesByCategory(categorySlug, excludeSlug, start, end);
@@ -48,7 +59,7 @@ export default function InfiniteArticleScroll({
 
     setArticles((prev) => [...prev, ...newPosts]);
     setPage((prev) => prev + 1);
-  };
+  }, [categorySlug, excludeSlug]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -62,7 +73,7 @@ export default function InfiniteArticleScroll({
 
     if (loaderRef.current) observer.observe(loaderRef.current);
     return () => observer.disconnect();
-  }, [hasMore, categorySlug, excludeSlug]);
+  }, [hasMore, loadArticles]);
 
   return (
     <div className="space-y-16 mt-12">

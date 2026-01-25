@@ -1,26 +1,26 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { sanity } from '@/lib/sanity'
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { sanity } from '@/lib/sanity';
 
 type Banner = {
-  _id: string
-  type: 'image' | 'html' | 'adsense'
-  title: string
-  link?: string
-  html?: string
-  frequency?: number
+  _id: string;
+  type: 'image' | 'html' | 'adsense';
+  title: string;
+  link?: string;
+  html?: string;
+  frequency?: number;
   image?: {
     asset: {
-      url: string
-    }
-  }
-}
+      url: string;
+    };
+  };
+};
 
 export default function SidebarAd() {
-  const [banners, setBanners] = useState<Banner[]>([])
+  const [banners, setBanners] = useState<Banner[]>([]);
 
   useEffect(() => {
     const fetchAds = async () => {
@@ -36,28 +36,27 @@ export default function SidebarAd() {
             url
           }
         }
-      }`
-      const data = await sanity.fetch(query)
+      }`;
+      const data = await sanity.fetch(query);
 
       // Применяем логику по frequency: фильтруем случайно
       const filtered = data.filter((banner: Banner) => {
-        if (banner.frequency === undefined) return true
-        return Math.random() * 100 <= banner.frequency
-      })
+        if (banner.frequency === undefined) return true;
+        return Math.random() * 100 <= banner.frequency;
+      });
 
-      setBanners(filtered)
-    }
+      setBanners(filtered);
+    };
 
-    fetchAds()
-  }, [])
+    fetchAds();
+  }, []);
 
-  if (!banners.length) return null
+  if (!banners.length) return null;
 
   return (
     <div className="space-y-4">
       {banners.map((banner) => (
         <div key={banner._id}>
-          {/* Баннер с изображением и ссылкой */}
           {banner.type === 'image' && banner.image?.asset?.url && banner.link && (
             <Link href={banner.link} target="_blank" rel="noopener noreferrer">
               <div className="rounded-xl overflow-hidden shadow">
@@ -72,20 +71,17 @@ export default function SidebarAd() {
             </Link>
           )}
 
-          {/* HTML / JS код баннера */}
           {banner.type === 'html' && banner.html && (
             <div dangerouslySetInnerHTML={{ __html: banner.html }} />
           )}
 
-          {/* Будущая реализация AdSense */}
           {banner.type === 'adsense' && (
             <div className="text-xs text-gray-400 italic text-center py-2">
-              {/* Можно будет сюда вставить реальный adsense tag */}
               Рекламный блок AdSense (в разработке)
             </div>
           )}
         </div>
       ))}
     </div>
-  )
+  );
 }

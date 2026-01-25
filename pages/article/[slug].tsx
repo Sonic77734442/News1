@@ -3,7 +3,7 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { sanity } from '@/lib/sanity';
-import { getArticleBySlug, getAllSlugs } from '@/lib/queries';
+import { getArticleBySlug } from '@/lib/queries';
 import FullArticle from '@/components/FullArticle';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -29,12 +29,12 @@ export default function ArticlePage({ article }: { article: any }) {
   const metaDescription = Array.isArray(article.body)
     ? article.body
         .filter((block: any) => block._type === 'block' && Array.isArray(block.children))
-        .map((block: any) =>
-          block.children.map((child: any) => child.text).join('')
-        )
+        .map((block: any) => block.children.map((child: any) => child.text).join(''))
         .join(' ')
         .slice(0, 150)
     : 'Описание недоступно';
+
+  const canonicalUrl = `https://news1.kz/article/${article?.slug?.current}`;
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
@@ -44,37 +44,39 @@ export default function ArticlePage({ article }: { article: any }) {
         <meta property="og:title" content={article?.title || ''} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:image" content={article?.mainImage?.asset?.url || ''} />
-        <meta property="og:url" content={`https://www.news1.kz/article/${article?.slug?.current}`} />
+        <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="article" />
 
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
 
+        <link rel="canonical" href={canonicalUrl} />
+
         <script type="application/ld+json">
           {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "NewsArticle",
-            "headline": article?.title,
-            "image": [article?.mainImage?.asset?.url],
-            "datePublished": article?.publishedAt,
-            "dateModified": article?.updatedAt || article?.publishedAt,
-            "author": {
-              "@type": "Person",
-              "name": article?.author?.name || "News1.kz"
+            '@context': 'https://schema.org',
+            '@type': 'NewsArticle',
+            headline: article?.title,
+            image: [article?.mainImage?.asset?.url],
+            datePublished: article?.publishedAt,
+            dateModified: article?.updatedAt || article?.publishedAt,
+            author: {
+              '@type': 'Person',
+              name: article?.author?.name || 'News1.kz',
             },
-            "publisher": {
-              "@type": "Organization",
-              "name": "News1.kz",
-              "logo": {
-                "@type": "ImageObject",
-                "url": "https://news1.kz/logo.png"
-              }
+            publisher: {
+              '@type': 'Organization',
+              name: 'News1.kz',
+              logo: {
+                '@type': 'ImageObject',
+                url: 'https://news1.kz/logo.png',
+              },
             },
-            "description": metaDescription,
-            "mainEntityOfPage": {
-              "@type": "WebPage",
-              "@id": `https://www.news1.kz/article/${article?.slug?.current}`
-            }
+            description: metaDescription,
+            mainEntityOfPage: {
+              '@type': 'WebPage',
+              '@id': canonicalUrl,
+            },
           })}
         </script>
       </Head>

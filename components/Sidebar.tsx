@@ -1,19 +1,19 @@
-'use client'
+'use client';
 
-import React, { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Facebook, Instagram, Send } from 'lucide-react'
-import { sanity } from '@/lib/sanity'
-import SidebarAd from './SidebarAd'
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Facebook, Instagram, Send } from 'lucide-react';
+import { sanity } from '@/lib/sanity';
+import SidebarAd from './SidebarAd';
 
 type Post = {
-  _id: string
-  title: string
-  slug: { current: string }
-}
+  _id: string;
+  title: string;
+  slug: { current: string };
+};
 
 export default function Sidebar() {
-  const [latestPosts, setLatestPosts] = useState<Post[]>([])
+  const [latestPosts, setLatestPosts] = useState<Post[]>([]);
 
   useEffect(() => {
     const fetchLatestPosts = async () => {
@@ -21,13 +21,13 @@ export default function Sidebar() {
         _id,
         title,
         slug
-      }`
-      const data = await sanity.fetch(query)
-      setLatestPosts(data)
-    }
+      }`;
+      const data = await sanity.fetch(query);
+      setLatestPosts(data);
+    };
 
-    fetchLatestPosts()
-  }, [])
+    fetchLatestPosts();
+  }, []);
 
   return (
     <aside className="lg:sticky top-24 h-fit space-y-6 hidden lg:block">
@@ -51,7 +51,7 @@ export default function Sidebar() {
       <div className="bg-white dark:bg-gray-800 p-4 rounded shadow">
         <h3 className="text-lg font-bold mb-2">Популярное</h3>
         <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-200">
-          {latestPosts.map(post => (
+          {latestPosts.map((post) => (
             <li key={post._id}>
               <Link href={`/article/${post.slug.current}`} className="hover:underline block">
                 {post.title}
@@ -61,5 +61,5 @@ export default function Sidebar() {
         </ul>
       </div>
     </aside>
-  )
+  );
 }

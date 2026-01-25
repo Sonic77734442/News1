@@ -1,36 +1,38 @@
 // components/WeatherWidget.tsx
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 interface WeatherData {
-  temp: number
-  icon: string
-  description: string
+  temp: number;
+  icon: string;
+  description: string;
 }
 
 const WeatherWidget = () => {
-  const [weather, setWeather] = useState<WeatherData | null>(null)
+  const [weather, setWeather] = useState<WeatherData | null>(null);
 
   useEffect(() => {
     const fetchWeather = async () => {
       try {
+        const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
+        if (!apiKey) return;
         const res = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=Almaty&appid=a74c5f3cfd33b8d6c9449a9fc5c64e90&units=metric&lang=ru`
-        )
-        const data = await res.json()
-        const icon = data.weather[0].icon
-        const description = data.weather[0].description
-        const temp = Math.round(data.main.temp)
-        setWeather({ temp, icon, description })
+          `https://api.openweathermap.org/data/2.5/weather?q=Almaty&appid=${apiKey}&units=metric&lang=ru`
+        );
+        const data = await res.json();
+        const icon = data.weather[0].icon;
+        const description = data.weather[0].description;
+        const temp = Math.round(data.main.temp);
+        setWeather({ temp, icon, description });
       } catch (error) {
-        console.error('Ошибка получения погоды:', error)
+        console.error('Ошибка получения погоды:', error);
       }
-    }
+    };
 
-    fetchWeather()
-  }, [])
+    fetchWeather();
+  }, []);
 
-  if (!weather) return null
+  if (!weather) return null;
 
   return (
     <motion.div
@@ -48,7 +50,7 @@ const WeatherWidget = () => {
       />
       <span className="font-medium">{weather.temp}°</span>
     </motion.div>
-  )
-}
+  );
+};
 
 export default WeatherWidget;

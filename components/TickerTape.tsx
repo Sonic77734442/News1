@@ -30,7 +30,7 @@ export default function TickerTape() {
     });
 
     container?.appendChild(script);
-  }, [theme]); // перезапускаем при смене темы
+  }, [theme]);
 
   return (
     <div className="bg-white dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 py-2 px-4">

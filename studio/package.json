@@ -9,14 +9,15 @@
     "start": "sanity start",
     "build": "sanity build",
     "deploy": "sanity deploy",
-    "deploy-graphql": "sanity graphql deploy"
+    "deploy-graphql": "sanity graphql deploy",
+    "migrate:ad-banners": "node ./scripts/migrate-ad-banners.js"
   },
   "keywords": [
     "sanity"
   ],
   "dependencies": {
     "@sanity/cli": "^3.36.2",
-    "@sanity/vision": "^3.84.0",
+    "@sanity/vision": "^3.36.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sanity": "^3.36.2",
