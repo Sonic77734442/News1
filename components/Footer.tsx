@@ -15,6 +15,9 @@ export default function Footer() {
           <Link href="/privacy" className="hover:underline">
             Политика конфиденциальности
           </Link>
+          <Link href="/editorial-policy" className="hover:underline">
+            Редакционная политика
+          </Link>
         </div>
       </div>
     </footer>
