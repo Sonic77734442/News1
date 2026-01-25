@@ -2,14 +2,17 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const body = req.body?.body;
+  const raw = req.body || {};
+  const body = raw.body || raw;
+  const title = body?.title;
+  const slug =
+    typeof body?.slug === 'string' ? body.slug : body?.slug?.current;
 
-  if (!body || !body.slug?.current || !body.title) {
-    return res.status(400).json({ error: 'Invalid payload from Sanity' });
+  if (!title || !slug) {
+    return res.status(400).json({
+      error: 'Invalid payload. Expected {title, slug} or {body:{title, slug:{current}}}',
+    });
   }
-
-  const title = body.title;
-  const slug = body.slug.current;
   const link = `https://news1.kz/article/${slug}`;
 
   const FB_PAGE_ID = process.env.FB_PAGE_ID;
