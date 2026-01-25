@@ -35,20 +35,36 @@ export default function ArticlePage({ article }: { article: any }) {
     : 'Описание недоступно';
 
   const canonicalUrl = `https://news1.kz/article/${article?.slug?.current}`;
+  const ogImage = article?.mainImage?.asset?.url || 'https://news1.kz/default-preview.png';
+  const publishedTime = article?.publishedAt || article?._createdAt;
+  const modifiedTime = article?.updatedAt || article?.publishedAt || article?._createdAt;
+  const authorName = article?.author?.name || 'News1.kz';
+  const categoryTitle = article?.category?.title;
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
       <Head>
         <title>{article?.title || 'Новость'} – News1.kz</title>
         <meta name="description" content={metaDescription} />
+
         <meta property="og:title" content={article?.title || ''} />
         <meta property="og:description" content={metaDescription} />
-        <meta property="og:image" content={article?.mainImage?.asset?.url || ''} />
+        <meta property="og:image" content={ogImage} />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="article" />
-
+        <meta property="og:site_name" content="News1.kz" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
+
+        {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+        {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+        {categoryTitle && <meta property="article:section" content={categoryTitle} />}
+        {authorName && <meta property="article:author" content={authorName} />}
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={article?.title || ''} />
+        <meta name="twitter:description" content={metaDescription} />
+        <meta name="twitter:image" content={ogImage} />
 
         <link rel="canonical" href={canonicalUrl} />
 
@@ -57,12 +73,12 @@ export default function ArticlePage({ article }: { article: any }) {
             '@context': 'https://schema.org',
             '@type': 'NewsArticle',
             headline: article?.title,
-            image: [article?.mainImage?.asset?.url],
-            datePublished: article?.publishedAt,
-            dateModified: article?.updatedAt || article?.publishedAt,
+            image: [ogImage],
+            datePublished: publishedTime,
+            dateModified: modifiedTime,
             author: {
               '@type': 'Person',
-              name: article?.author?.name || 'News1.kz',
+              name: authorName,
             },
             publisher: {
               '@type': 'Organization',
