@@ -70,7 +70,7 @@ export default function TickerTape() {
   }, [theme, enabled]);
 
   return (
-    <div className="bg-white dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 py-2 px-4">
+    <div className="bg-white dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 py-2 px-4 min-h-[52px]">
       {!enabled && (
         <div className="flex items-center justify-between gap-3 text-sm">
           <span className="text-gray-600 dark:text-gray-300">
@@ -85,7 +85,7 @@ export default function TickerTape() {
           </button>
         </div>
       )}
-      <div id="ticker-tape-widget" className="overflow-hidden" />
+      <div id="ticker-tape-widget" className="overflow-hidden min-h-[28px]" />
     </div>
   );
 }

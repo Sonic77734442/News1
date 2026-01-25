@@ -10,7 +10,9 @@ export default function ThemeSwitcher() {
 
   useEffect(() => setMounted(true), []);
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return <div className="w-[92px] h-5" aria-hidden />;
+  }
 
   const isDark = theme === "dark";
 

@@ -32,7 +32,14 @@ const WeatherWidget = () => {
     fetchWeather();
   }, []);
 
-  if (!weather) return null;
+  if (!weather) {
+    return (
+      <div
+        className="w-16 h-6 rounded-full bg-transparent opacity-0"
+        aria-hidden
+      />
+    );
+  }
 
   return (
     <motion.div
