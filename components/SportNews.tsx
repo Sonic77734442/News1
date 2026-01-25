@@ -2,8 +2,19 @@ import { useEffect, useState } from 'react';
 import { fetchCategoryPosts } from '@/lib/sanity';
 import PostCard from './PostCard';
 
+type PostType = {
+  _id: string;
+  title?: string;
+  slug?: { current?: string };
+  publishedAt?: string;
+  mainImage?: { asset?: { url?: string } };
+  description?: string;
+  author?: { name?: string };
+  category?: { slug?: { current?: string } };
+};
+
 export default function SportNews() {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<PostType[]>([]);
 
   useEffect(() => {
     const loadPosts = async () => {
