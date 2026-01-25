@@ -14,8 +14,8 @@ const WeatherWidget = () => {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
-        if (!apiKey) return;
+        const apiKey =
+          process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || 'a74c5f3cfd33b8d6c9449a9fc5c64e90';
         const res = await fetch(
           `https://api.openweathermap.org/data/2.5/weather?q=Almaty&appid=${apiKey}&units=metric&lang=ru`
         );

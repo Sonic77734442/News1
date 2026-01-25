@@ -114,6 +114,7 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
                       alt={featuredPost.title || 'Избранная новость'}
                       fill
                       priority
+                      fetchPriority="high"
                       quality={75}
                       className="object-cover"
                     />
