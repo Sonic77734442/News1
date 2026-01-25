@@ -36,14 +36,11 @@ export default function Sidebar() {
       <div className="bg-white dark:bg-gray-800 p-4 rounded shadow">
         <h3 className="text-lg font-bold mb-2">Мы в соцсетях</h3>
         <div className="flex space-x-4">
-          <Link href="https://facebook.com/newssitekz" target="_blank" rel="noopener noreferrer">
+          <Link href="https://www.facebook.com/news1kz" target="_blank" rel="noopener noreferrer">
             <Facebook className="w-5 h-5 hover:text-blue-600 transition" />
           </Link>
-          <Link href="https://t.me/your_channel" target="_blank" rel="noopener noreferrer">
+          <Link href="https://t.me/news1kz" target="_blank" rel="noopener noreferrer">
             <Send className="w-5 h-5 hover:text-blue-400 transition" />
-          </Link>
-          <Link href="https://instagram.com/your_page" target="_blank" rel="noopener noreferrer">
-            <Instagram className="w-5 h-5 hover:text-pink-500 transition" />
           </Link>
         </div>
       </div>
