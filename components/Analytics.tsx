@@ -4,20 +4,53 @@ import Script from 'next/script';
 
 export default function Analytics() {
   const [ready, setReady] = useState(false);
+  const [consent, setConsent] = useState<'granted' | 'denied' | 'unknown'>('unknown');
   const enabled =
     process.env.NODE_ENV === 'production' &&
     process.env.NEXT_PUBLIC_ENABLE_ANALYTICS !== 'false';
 
   useEffect(() => {
     if (!enabled) return;
+    try {
+      const stored = localStorage.getItem('analytics-consent');
+      if (stored === 'granted' || stored === 'denied') {
+        setConsent(stored);
+      } else {
+        setConsent('unknown');
+      }
+    } catch {
+      setConsent('unknown');
+    }
+
+    const onStorage = () => {
+      try {
+        const stored = localStorage.getItem('analytics-consent');
+        if (stored === 'granted' || stored === 'denied') {
+          setConsent(stored);
+        } else {
+          setConsent('unknown');
+        }
+      } catch {}
+    };
+
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('analytics-consent', onStorage as EventListener);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('analytics-consent', onStorage as EventListener);
+    };
+  }, [enabled]);
+
+  useEffect(() => {
+    if (!enabled || consent !== 'granted') return;
     if ('requestIdleCallback' in window) {
       (window as any).requestIdleCallback(() => setReady(true), { timeout: 3000 });
     } else {
       setTimeout(() => setReady(true), 2000);
     }
-  }, [enabled]);
+  }, [enabled, consent]);
 
-  if (!enabled || !ready) return null;
+  if (!enabled || !ready || consent !== 'granted') return null;
 
   return (
     <>

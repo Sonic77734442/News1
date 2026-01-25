@@ -43,11 +43,7 @@ const WeatherWidget = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <img
-        src={`https://openweathermap.org/img/wn/${weather.icon}.png`}
-        alt="Погода"
-        className="w-6 h-6"
-      />
+      <img src={`/api/weather-icon?icon=${weather.icon}`} alt="Погода" className="w-6 h-6" />
       <span className="font-medium">{weather.temp}°</span>
     </motion.div>
   );

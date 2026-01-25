@@ -1,6 +1,58 @@
 import Image from "next/image";
+import { useState } from "react";
 import { PortableTextComponents } from "@portabletext/react";
 import { urlFor } from "@/lib/sanityImage";
+
+const toYouTubeId = (url?: string) => {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes("youtu.be")) {
+      return parsed.pathname.replace("/", "");
+    }
+    if (parsed.hostname.includes("youtube.com")) {
+      return parsed.searchParams.get("v");
+    }
+  } catch {
+    return null;
+  }
+  return null;
+};
+
+const LazyYouTube = ({ url, title }: { url?: string; title?: string }) => {
+  const [loaded, setLoaded] = useState(false);
+  const videoId = toYouTubeId(url);
+  if (!videoId) return null;
+
+  const thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  const embed = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+
+  return (
+    <div className="relative w-full aspect-video my-6 rounded-lg overflow-hidden bg-black">
+      {!loaded ? (
+        <>
+          <Image src={thumbnail} alt={title || "YouTube video"} fill className="object-cover" />
+          <button
+            type="button"
+            onClick={() => setLoaded(true)}
+            className="absolute inset-0 flex items-center justify-center text-white text-sm md:text-base bg-black/40 hover:bg-black/50 transition"
+            aria-label="Play video"
+          >
+            ▶ Смотреть видео
+          </button>
+        </>
+      ) : (
+        <iframe
+          src={embed}
+          title={title || "YouTube video"}
+          className="absolute inset-0 w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      )}
+    </div>
+  );
+};
 
 export const portableTextComponents: PortableTextComponents = {
   block: {
@@ -50,5 +102,8 @@ export const portableTextComponents: PortableTextComponents = {
         </div>
       );
     },
+    youtube: ({ value }: any) => (
+      <LazyYouTube url={value?.url} title={value?.title} />
+    ),
   },
 };

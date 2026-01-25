@@ -10,5 +10,22 @@ export default {
       type: 'image',
       options: { hotspot: true },
     },
+    {
+      type: 'object',
+      name: 'youtube',
+      title: 'YouTube',
+      fields: [
+        {
+          name: 'url',
+          title: 'URL',
+          type: 'url',
+        },
+        {
+          name: 'title',
+          title: 'Заголовок',
+          type: 'string',
+        },
+      ],
+    },
   ],
 };

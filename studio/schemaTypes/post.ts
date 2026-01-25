@@ -58,8 +58,7 @@ export default {
     {
       name: 'body',
       title: 'Текст статьи',
-      type: 'array',
-      of: [{ type: 'block' }],
+      type: 'blockContent',
     },
   ],
 };

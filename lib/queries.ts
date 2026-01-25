@@ -69,6 +69,7 @@ export const getArticlesByCategory = (
     mainImage {
       asset -> { url }
     },
+    body,
     "description": coalesce(description, shortDescription),
     author->{name},
     category->{title, slug}
