@@ -4,6 +4,7 @@ export default function Document() {
   return (
     <Html lang="ru" suppressHydrationWarning>
       <Head>
+        <meta name="facebook-domain-verification" content="61emn4o3d20at0o73tcdcb7bcbnqrn" />
         <link rel="dns-prefetch" href="https://www.tradingview-widget.com" />
         <link rel="dns-prefetch" href="https://s3.tradingview.com" />
         <link rel="preconnect" href="https://www.tradingview-widget.com" />
