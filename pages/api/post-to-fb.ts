@@ -5,6 +5,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const raw = req.body || {};
   const body = raw.body || raw;
   const title = body?.title;
+  const excerpt = body?.excerpt || body?.shortDescription || body?.description;
   const slug = typeof body?.slug === 'string' ? body.slug : body?.slug?.current;
 
   if (!title || !slug) {
@@ -24,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await axios.post(`https://graph.facebook.com/v18.0/${FB_PAGE_ID}/feed`, {
-      message: title,
+      message: excerpt ? `${title}\n\n${excerpt}` : title,
       link,
       access_token: FB_PAGE_TOKEN,
     });
