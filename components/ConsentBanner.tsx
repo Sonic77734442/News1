@@ -19,6 +19,8 @@ export default function ConsentBanner() {
   const setConsent = (value: 'granted' | 'denied') => {
     try {
       localStorage.setItem('analytics-consent', value);
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({ event: value === 'granted' ? 'consent_granted' : 'consent_denied' });
       window.dispatchEvent(new Event('analytics-consent'));
     } catch {}
     setVisible(false);
