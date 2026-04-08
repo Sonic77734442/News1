@@ -76,7 +76,7 @@ export default function FullArticle({
 
       <h1 className="text-2xl font-bold">{title}</h1>
       <p className="text-sm text-gray-500">
-        {new Date(publishedAt).toLocaleDateString()} {author?.name && `• ${author.name}`}
+        {new Date(publishedAt).toLocaleDateString('ru-RU', { timeZone: 'UTC' })} {author?.name && `• ${author.name}`}
       </p>
       {category?.title && (
         <p className="text-xs uppercase text-red-600 font-semibold">{category.title}</p>

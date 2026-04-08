@@ -52,7 +52,7 @@ export default function PostCard({ post, categoryLabel, forceHeight = false }: P
           )}
           {post.publishedAt && (
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              {new Date(post.publishedAt).toLocaleDateString()}
+              {new Date(post.publishedAt).toLocaleDateString('ru-RU', { timeZone: 'UTC' })}
             </span>
           )}
           <h3 className="text-lg font-semibold leading-snug text-gray-900 dark:text-white group-hover:underline line-clamp-2">
