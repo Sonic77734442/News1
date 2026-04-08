@@ -1,10 +1,13 @@
 // components/Analytics.tsx
 import { useEffect, useState } from 'react';
 import Script from 'next/script';
+import { useRouter } from 'next/router';
 
 export default function Analytics() {
+  const router = useRouter();
   const [ready, setReady] = useState(false);
   const [consent, setConsent] = useState<'granted' | 'denied' | 'unknown'>('unknown');
+  const ga4Id = process.env.NEXT_PUBLIC_GA4_ID || 'G-HRW58CMLB8';
   const enabled =
     process.env.NODE_ENV === 'production' &&
     process.env.NEXT_PUBLIC_ENABLE_ANALYTICS !== 'false';
@@ -54,7 +57,13 @@ export default function Analytics() {
     if (!enabled) return;
     try {
       (window as any).dataLayer = (window as any).dataLayer || [];
-      const gtag = (...args: any[]) => (window as any).dataLayer.push(args);
+      const gtag = (...args: any[]) => {
+        if (typeof (window as any).gtag === 'function') {
+          (window as any).gtag(...args);
+          return;
+        }
+        (window as any).dataLayer.push(args);
+      };
       if (consent === 'granted') {
         gtag('consent', 'update', {
           ad_storage: 'granted',
@@ -68,6 +77,22 @@ export default function Analytics() {
       }
     } catch {}
   }, [enabled, consent]);
+
+  useEffect(() => {
+    if (!enabled || consent !== 'granted') return;
+    const onRouteChangeComplete = (url: string) => {
+      if (typeof (window as any).gtag !== 'function') return;
+      (window as any).gtag('event', 'page_view', {
+        page_path: url,
+        page_location: window.location.href,
+        page_title: document.title,
+      });
+    };
+    router.events.on('routeChangeComplete', onRouteChangeComplete);
+    return () => {
+      router.events.off('routeChangeComplete', onRouteChangeComplete);
+    };
+  }, [enabled, consent, router.events]);
 
   if (!enabled) return null;
 
@@ -88,6 +113,25 @@ export default function Analytics() {
           `,
         }}
       />
+
+      {consent === 'granted' && (
+        <>
+          <Script id="ga4-lib" src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`} strategy="afterInteractive" />
+          <Script
+            id="ga4-init"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                window.gtag = gtag;
+                gtag('js', new Date());
+                gtag('config', '${ga4Id}', { send_page_view: true });
+              `,
+            }}
+          />
+        </>
+      )}
 
       {/* Google Tag Manager */}
       <Script
