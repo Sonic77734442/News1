@@ -2,11 +2,20 @@
 import axios from 'axios';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   const raw = req.body || {};
   const body = raw.body || raw;
   const title = body?.title;
   const excerpt = body?.excerpt || body?.shortDescription || body?.description;
   const slug = typeof body?.slug === 'string' ? body.slug : body?.slug?.current;
+  const token = body?.token;
+
+  if (process.env.FB_WEBHOOK_SECRET && token !== process.env.FB_WEBHOOK_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
   if (!title || !slug) {
     return res.status(400).json({

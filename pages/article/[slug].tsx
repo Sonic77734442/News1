@@ -1,9 +1,9 @@
-// pages/article/[slug].tsx
+﻿// pages/article/[slug].tsx
 
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { sanity } from '@/lib/sanity';
-import { getArticleBySlug } from '@/lib/queries';
+import { articleBySlugQuery } from '@/lib/queries';
 import FullArticle from '@/components/FullArticle';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -12,9 +12,8 @@ import InfiniteArticleScroll from '@/components/InfiniteArticleScroll';
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const slug = params?.slug as string;
-  const query = getArticleBySlug(slug);
 
-  const article = await sanity.fetch(query);
+  const article = await sanity.fetch(articleBySlugQuery, { slug });
 
   if (!article) {
     return { notFound: true };
@@ -32,7 +31,7 @@ export default function ArticlePage({ article }: { article: any }) {
         .map((block: any) => block.children.map((child: any) => child.text).join(''))
         .join(' ')
         .slice(0, 150)
-    : 'Описание недоступно';
+    : 'РћРїРёСЃР°РЅРёРµ РЅРµРґРѕСЃС‚СѓРїРЅРѕ';
 
   const canonicalUrl = `https://news1.kz/article/${article?.slug?.current}`;
   const ogImage = article?.mainImage?.asset?.url || 'https://news1.kz/default-preview.png';
@@ -44,7 +43,7 @@ export default function ArticlePage({ article }: { article: any }) {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
       <Head>
-        <title>{article?.title || 'Новость'} – News1.kz</title>
+        <title>{article?.title || 'РќРѕРІРѕСЃС‚СЊ'} вЂ“ News1.kz</title>
         <meta name="description" content={metaDescription} />
 
         <meta property="og:title" content={article?.title || ''} />

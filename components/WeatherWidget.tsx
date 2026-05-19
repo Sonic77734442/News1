@@ -1,4 +1,4 @@
-// components/WeatherWidget.tsx
+﻿// components/WeatherWidget.tsx
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
@@ -14,18 +14,26 @@ const WeatherWidget = () => {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        const apiKey =
-          process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || 'a74c5f3cfd33b8d6c9449a9fc5c64e90';
+        const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
+        if (!apiKey) {
+          return;
+        }
+
         const res = await fetch(
           `https://api.openweathermap.org/data/2.5/weather?q=Almaty&appid=${apiKey}&units=metric&lang=ru`
         );
+
+        if (!res.ok) {
+          return;
+        }
+
         const data = await res.json();
         const icon = data.weather[0].icon;
         const description = data.weather[0].description;
         const temp = Math.round(data.main.temp);
         setWeather({ temp, icon, description });
       } catch (error) {
-        console.error('Ошибка получения погоды:', error);
+        console.error('РћС€РёР±РєР° РїРѕР»СѓС‡РµРЅРёСЏ РїРѕРіРѕРґС‹:', error);
       }
     };
 
@@ -33,12 +41,7 @@ const WeatherWidget = () => {
   }, []);
 
   if (!weather) {
-    return (
-      <div
-        className="w-16 h-6 rounded-full bg-transparent opacity-0"
-        aria-hidden
-      />
-    );
+    return <div className="w-16 h-6 rounded-full bg-transparent opacity-0" aria-hidden />;
   }
 
   return (
@@ -50,8 +53,8 @@ const WeatherWidget = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <img src={`/api/weather-icon?icon=${weather.icon}`} alt="Погода" className="w-6 h-6" />
-      <span className="font-medium">{weather.temp}°</span>
+      <img src={`/api/weather-icon?icon=${weather.icon}`} alt="РџРѕРіРѕРґР°" className="w-6 h-6" />
+      <span className="font-medium">{weather.temp}В°</span>
     </motion.div>
   );
 };

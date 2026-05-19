@@ -1,10 +1,10 @@
-// components/InfiniteArticleScroll.tsx
+﻿// components/InfiniteArticleScroll.tsx
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import FullArticle from './FullArticle';
 import type { PortableTextBlock } from 'sanity';
 import { sanity } from '@/lib/sanity';
-import { getArticlesByCategory } from '@/lib/queries';
+import { articlesByCategoryQuery } from '@/lib/queries';
 
 export type ArticleType = {
   _id: string;
@@ -49,8 +49,12 @@ export default function InfiniteArticleScroll({
     const start = pageRef.current * pageSize;
     const end = start + pageSize;
 
-    const query = getArticlesByCategory(categorySlug, excludeSlug, start, end);
-    const newPosts: ArticleType[] = await sanity.fetch(query);
+    const newPosts: ArticleType[] = await sanity.fetch(articlesByCategoryQuery, {
+      categorySlug,
+      excludeSlug,
+      start,
+      end,
+    });
 
     if (!newPosts || newPosts.length === 0) {
       setHasMore(false);
@@ -82,7 +86,7 @@ export default function InfiniteArticleScroll({
       ))}
       {hasMore && (
         <div ref={loaderRef} className="text-center text-gray-400 dark:text-gray-500 py-8">
-          Загрузка следующей статьи...
+          Р—Р°РіСЂСѓР·РєР° СЃР»РµРґСѓСЋС‰РµР№ СЃС‚Р°С‚СЊРё...
         </div>
       )}
     </div>

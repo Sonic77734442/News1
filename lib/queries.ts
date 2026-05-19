@@ -1,4 +1,4 @@
-// queries.ts
+﻿// queries.ts
 
 export const getAllSlugs = () => `
   *[_type == "post" && defined(slug.current)]{
@@ -6,8 +6,8 @@ export const getAllSlugs = () => `
   }
 `;
 
-export const getArticleBySlug = (slug: string) => `
-  *[_type == "post" && slug.current == "${slug}"][0]{
+export const articleBySlugQuery = `
+  *[_type == "post" && slug.current == $slug][0]{
     _id,
     title,
     slug,
@@ -22,18 +22,14 @@ export const getArticleBySlug = (slug: string) => `
   }
 `;
 
-export const fetchCategoryPosts = (
-  categorySlug: string,
-  start: number,
-  end: number
-) => `
+export const categoryPostsQuery = `
   *[
     _type == "post" &&
     defined(slug.current) &&
-    category->slug.current == "${categorySlug}"
+    category->slug.current == $categorySlug
   ]
   | order(publishedAt desc)
-  [${start}...${end}] {
+  [$start...$end] {
     _id,
     title,
     slug,
@@ -47,21 +43,15 @@ export const fetchCategoryPosts = (
   }
 `;
 
-// Добавлено: запрос для бесконечной прокрутки на странице статьи
-export const getArticlesByCategory = (
-  categorySlug: string,
-  excludeSlug: string,
-  start: number,
-  end: number
-) => `
+export const articlesByCategoryQuery = `
   *[
     _type == "post" &&
     defined(slug.current) &&
-    slug.current != "${excludeSlug}" &&
-    category->slug.current == "${categorySlug}"
+    slug.current != $excludeSlug &&
+    category->slug.current == $categorySlug
   ]
   | order(publishedAt desc)
-  [${start}...${end}] {
+  [$start...$end] {
     _id,
     title,
     slug,
