@@ -90,7 +90,7 @@ export default function CategoryPage() {
   }, [hasMore, loading]);
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
+    <div className="min-h-screen dark:text-white font-sans">
       <Head>
         <title>{`Категория: ${slug} – News1.kz`}</title>
         <meta name="description" content={`Свежие новости категории ${slug}`} />

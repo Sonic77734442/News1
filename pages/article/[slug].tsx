@@ -41,7 +41,7 @@ export default function ArticlePage({ article }: { article: any }) {
   const categoryTitle = article?.category?.title;
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
+    <div className="min-h-screen dark:text-white font-sans">
       <Head>
         <title>{article?.title || 'РќРѕРІРѕСЃС‚СЊ'} вЂ“ News1.kz</title>
         <meta name="description" content={metaDescription} />
