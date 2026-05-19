@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
     domains: ['cdn.sanity.io'],
     formats: ['image/webp'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.news1.kz' }],
+        destination: 'https://news1.kz/:path*',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

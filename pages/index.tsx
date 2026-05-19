@@ -38,13 +38,13 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
   return (
     <div className="min-h-screen dark:text-white font-sans">
       <Head>
-        <title>News1.kz – Последние новости</title>
+        <title>Последние новости Казахстана сегодня: экономика, финансы, спорт и IT — News1.kz</title>
         <link rel="canonical" href="https://news1.kz/" />
         <meta
           name="description"
           content="Новости Казахстана каждый день – экономика, политика, спорт, финансы и технологии. Будьте в курсе главных событий страны с News1.kz."
         />
-        <meta property="og:title" content="News1.kz – Последние новости" />
+        <meta property="og:title" content="Последние новости Казахстана сегодня: экономика, финансы, спорт и IT — News1.kz" />
         <meta
           property="og:description"
           content="Новости Казахстана каждый день – экономика, политика, спорт, финансы и технологии. Будьте в курсе главных событий страны с News1.kz."
@@ -56,7 +56,7 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
         <meta property="og:image:height" content="630" />
 
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="News1.kz – Последние новости Казахстана" />
+        <meta name="twitter:title" content="Последние новости Казахстана сегодня: экономика, финансы, спорт и IT — News1.kz" />
         <meta
           name="twitter:description"
           content="Новости Казахстана каждый день – политика, экономика, спорт и технологии."
@@ -100,6 +100,7 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
 
       <Header />
       <TickerTape />
+      <h1 className="sr-only">Последние новости Казахстана на News1.kz</h1>
 
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
         <div className="lg:col-span-3 space-y-10">
