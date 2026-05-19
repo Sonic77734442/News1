@@ -12,8 +12,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const excerpt = body?.excerpt || body?.shortDescription || body?.description;
   const slug = typeof body?.slug === 'string' ? body.slug : body?.slug?.current;
   const token = body?.token;
+  const webhookSecret = process.env.FB_WEBHOOK_SECRET;
 
-  if (process.env.FB_WEBHOOK_SECRET && token !== process.env.FB_WEBHOOK_SECRET) {
+  if (!webhookSecret) {
+    return res.status(500).json({ error: 'Missing FB_WEBHOOK_SECRET' });
+  }
+
+  if (token !== webhookSecret) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
