@@ -21,11 +21,14 @@ type Banner = {
 
 export default function SidebarAd() {
   const [banners, setBanners] = useState<Banner[]>([]);
-  const wrapHtmlWithoutScroll = (html: string) => `
+  const [bannerHeights, setBannerHeights] = useState<Record<string, number>>({});
+
+  const wrapHtmlWithoutScroll = (html: string, bannerId: string) => `
     <!doctype html>
     <html>
       <head>
         <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <style>
           html, body {
             margin: 0;
@@ -34,13 +37,46 @@ export default function SidebarAd() {
             scrollbar-width: none;
             -ms-overflow-style: none;
             background: transparent;
+            width: 100%;
           }
           body::-webkit-scrollbar {
             display: none;
           }
         </style>
       </head>
-      <body>${html}</body>
+      <body>
+        ${html}
+        <script>
+          (function () {
+            var id = ${JSON.stringify(bannerId)};
+            var sent = 0;
+            function sendHeight() {
+              var doc = document.documentElement;
+              var body = document.body;
+              var height = Math.max(
+                doc ? doc.scrollHeight : 0,
+                body ? body.scrollHeight : 0,
+                doc ? doc.offsetHeight : 0,
+                body ? body.offsetHeight : 0,
+                120
+              );
+              if (Math.abs(height - sent) > 1) {
+                sent = height;
+                parent.postMessage({ type: 'news1-banner-height', id: id, height: height }, '*');
+              }
+            }
+            window.addEventListener('load', sendHeight);
+            window.addEventListener('resize', sendHeight);
+            var observer = new MutationObserver(function () {
+              requestAnimationFrame(sendHeight);
+            });
+            observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+            setTimeout(sendHeight, 0);
+            setTimeout(sendHeight, 200);
+            setTimeout(sendHeight, 1000);
+          })();
+        </script>
+      </body>
     </html>
   `;
 
@@ -73,6 +109,26 @@ export default function SidebarAd() {
     fetchAds();
   }, []);
 
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      const payload = event.data as { type?: string; id?: string; height?: number };
+      if (!payload || payload.type !== 'news1-banner-height' || !payload.id || !payload.height) {
+        return;
+      }
+
+      setBannerHeights((prev) => {
+        const nextHeight = Math.max(120, Math.round(payload.height as number));
+        if (prev[payload.id as string] === nextHeight) {
+          return prev;
+        }
+        return { ...prev, [payload.id as string]: nextHeight };
+      });
+    };
+
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
+
   if (!banners.length) return null;
 
   return (
@@ -97,9 +153,10 @@ export default function SidebarAd() {
             <iframe
               title={banner.title || 'Ad banner'}
               sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
-              srcDoc={wrapHtmlWithoutScroll(banner.html)}
+              srcDoc={wrapHtmlWithoutScroll(banner.html, banner._id)}
               scrolling="no"
-              className="w-full min-h-[120px] border-0 overflow-hidden"
+              className="w-full border-0 overflow-hidden block"
+              style={{ height: `${bannerHeights[banner._id] ?? 120}px` }}
               loading="lazy"
             />
           )}
