@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Header from '@/components/Header';
@@ -62,13 +62,13 @@ export default function CategoryPage() {
     setLoading(false);
   };
 
-  // Загружаем при первом монтировании или изменении slug
+  // Р—Р°РіСЂСѓР¶Р°РµРј РїСЂРё РїРµСЂРІРѕРј РјРѕРЅС‚РёСЂРѕРІР°РЅРёРё РёР»Рё РёР·РјРµРЅРµРЅРёРё slug
   useEffect(() => {
     if (typeof slug === 'string') {
       setPosts([]);
       setPage(0);
       setHasMore(true);
-      loadPosts(true); // сбрасываем страницу и подгружаем заново
+      loadPosts(true); // СЃР±СЂР°СЃС‹РІР°РµРј СЃС‚СЂР°РЅРёС†Сѓ Рё РїРѕРґРіСЂСѓР¶Р°РµРј Р·Р°РЅРѕРІРѕ
     }
   }, [slug]);
 
@@ -94,12 +94,12 @@ export default function CategoryPage() {
   }, [hasMore, loading]);
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
+    <div className="min-h-screen dark:text-white font-sans">
       <Head>
-        <title>{`Категория: ${slug} – NewsSite.kz`}</title>
-        <meta name="description" content={`Свежие новости категории ${slug}`} />
-        <meta property="og:title" content={`Категория: ${slug} – NewsSite.kz`} />
-        <meta property="og:description" content={`Читайте последние новости в категории ${slug}`} />
+        <title>{`РљР°С‚РµРіРѕСЂРёСЏ: ${slug} вЂ“ NewsSite.kz`}</title>
+        <meta name="description" content={`РЎРІРµР¶РёРµ РЅРѕРІРѕСЃС‚Рё РєР°С‚РµРіРѕСЂРёРё ${slug}`} />
+        <meta property="og:title" content={`РљР°С‚РµРіРѕСЂРёСЏ: ${slug} вЂ“ NewsSite.kz`} />
+        <meta property="og:description" content={`Р§РёС‚Р°Р№С‚Рµ РїРѕСЃР»РµРґРЅРёРµ РЅРѕРІРѕСЃС‚Рё РІ РєР°С‚РµРіРѕСЂРёРё ${slug}`} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`https://newssite.kz/category/${slug}`} />
         <meta property="og:image" content="/cloud.jpg" />
@@ -109,7 +109,7 @@ export default function CategoryPage() {
 
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
         <div className="lg:col-span-3 space-y-6">
-          <h1 className="text-2xl font-bold mb-4 capitalize">Категория: {slug}</h1>
+          <h1 className="text-2xl font-bold mb-4 capitalize">РљР°С‚РµРіРѕСЂРёСЏ: {slug}</h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {posts.map((post) => (
               <PostCard key={post._id} post={post} />
@@ -117,11 +117,11 @@ export default function CategoryPage() {
           </div>
           {hasMore ? (
             <div ref={loaderRef} className="text-center py-8 text-gray-400 dark:text-gray-500">
-              Загрузка...
+              Р—Р°РіСЂСѓР·РєР°...
             </div>
           ) : (
             <div className="text-center py-8 text-gray-400 dark:text-gray-500">
-              Больше новостей нет.
+              Р‘РѕР»СЊС€Рµ РЅРѕРІРѕСЃС‚РµР№ РЅРµС‚.
             </div>
           )}
         </div>
@@ -133,3 +133,4 @@ export default function CategoryPage() {
     </div>
   );
 }
+

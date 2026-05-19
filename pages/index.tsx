@@ -36,7 +36,7 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
+    <div className="min-h-screen dark:text-white font-sans">
       <Head>
         <title>News1.kz – Последние новости</title>
         <link rel="canonical" href="https://news1.kz/" />
@@ -92,6 +92,7 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
 
       <Header />
       <TickerTape />
+      <h1 className="sr-only">News1.kz — последние новости Казахстана</h1>
 
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
         <div className="lg:col-span-3 space-y-10">

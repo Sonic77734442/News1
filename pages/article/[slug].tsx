@@ -1,4 +1,4 @@
-// pages/article/[slug].tsx
+﻿// pages/article/[slug].tsx
 
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
@@ -34,12 +34,12 @@ export default function ArticlePage({ article }: { article: any }) {
         )
         .join(' ')
         .slice(0, 150)
-    : 'Описание недоступно';
+    : 'РћРїРёСЃР°РЅРёРµ РЅРµРґРѕСЃС‚СѓРїРЅРѕ';
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white font-sans">
+    <div className="min-h-screen dark:text-white font-sans">
       <Head>
-        <title>{article?.title || 'Новость'} – News1.kz</title>
+        <title>{article?.title || 'РќРѕРІРѕСЃС‚СЊ'} вЂ“ News1.kz</title>
         <meta name="description" content={metaDescription} />
         <meta property="og:title" content={article?.title || ''} />
         <meta property="og:description" content={metaDescription} />
@@ -98,3 +98,4 @@ export default function ArticlePage({ article }: { article: any }) {
     </div>
   );
 }
+
