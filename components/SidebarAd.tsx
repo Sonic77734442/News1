@@ -21,6 +21,28 @@ type Banner = {
 
 export default function SidebarAd() {
   const [banners, setBanners] = useState<Banner[]>([]);
+  const wrapHtmlWithoutScroll = (html: string) => `
+    <!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <style>
+          html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden !important;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            background: transparent;
+          }
+          body::-webkit-scrollbar {
+            display: none;
+          }
+        </style>
+      </head>
+      <body>${html}</body>
+    </html>
+  `;
 
   useEffect(() => {
     const fetchAds = async () => {
@@ -75,8 +97,9 @@ export default function SidebarAd() {
             <iframe
               title={banner.title || 'Ad banner'}
               sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
-              srcDoc={banner.html}
-              className="w-full min-h-[120px] border-0"
+              srcDoc={wrapHtmlWithoutScroll(banner.html)}
+              scrolling="no"
+              className="w-full min-h-[120px] border-0 overflow-hidden"
               loading="lazy"
             />
           )}

@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/router';
+﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
+import { GetStaticPaths, GetStaticProps } from 'next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Sidebar from '@/components/Sidebar';
 import PostCard from '@/components/PostCard';
-import { fetchCategoryPosts } from '@/lib/sanity';
+import { fetchCategoryPosts, sanity } from '@/lib/sanity';
 
 const pageSize = 6;
 
@@ -20,24 +20,74 @@ type PostType = {
   category?: { slug: { current: string } };
 };
 
-export default function CategoryPage() {
-  const router = useRouter();
-  const rawSlug = router.query.slug;
-  const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug;
+type CategoryPageProps = {
+  slug: string;
+  initialPosts: PostType[];
+  initialHasMore: boolean;
+};
 
-  const [posts, setPosts] = useState<PostType[]>([]);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+export const getStaticPaths: GetStaticPaths = async () => {
+  const categorySlugs: { slug: string }[] = await sanity
+    .fetch(`*[_type == "category" && defined(slug.current)]{ "slug": slug.current }`)
+    .catch(() => []);
+
+  return {
+    paths: categorySlugs.map(({ slug }) => ({ params: { slug } })),
+    fallback: 'blocking',
+  };
+};
+
+export const getStaticProps: GetStaticProps<CategoryPageProps> = async ({ params }) => {
+  const slug = params?.slug as string;
+
+  if (!slug) {
+    return { notFound: true, revalidate: 60 };
+  }
+
+  const initialPosts: PostType[] = await fetchCategoryPosts(slug, 0, pageSize).catch(() => []);
+
+  return {
+    props: {
+      slug,
+      initialPosts,
+      initialHasMore: initialPosts.length === pageSize,
+    },
+    revalidate: 60,
+  };
+};
+
+export default function CategoryPage({ slug, initialPosts, initialHasMore }: CategoryPageProps) {
+  const [posts, setPosts] = useState<PostType[]>(initialPosts);
+  const [page, setPage] = useState(initialPosts.length ? 1 : 0);
+  const [hasMore, setHasMore] = useState(initialHasMore);
   const [loading, setLoading] = useState(false);
   const loaderRef = useRef<HTMLDivElement | null>(null);
+  const pageRef = useRef(initialPosts.length ? 1 : 0);
+  const postsRef = useRef<PostType[]>(initialPosts);
 
-  const loadPosts = async (reset = false) => {
-    if (!slug || typeof slug !== 'string' || loading) return;
+  useEffect(() => {
+    const nextPage = initialPosts.length ? 1 : 0;
+    setPosts(initialPosts);
+    setPage(nextPage);
+    setHasMore(initialHasMore);
+    pageRef.current = nextPage;
+    postsRef.current = initialPosts;
+  }, [slug, initialHasMore, initialPosts]);
+
+  useEffect(() => {
+    pageRef.current = page;
+  }, [page]);
+
+  useEffect(() => {
+    postsRef.current = posts;
+  }, [posts]);
+
+  const loadPosts = useCallback(async () => {
+    if (loading || !hasMore) return;
 
     setLoading(true);
 
-    const currentPage = reset ? 0 : page;
-    const start = currentPage * pageSize;
+    const start = pageRef.current * pageSize;
     const end = start + pageSize;
 
     const newPosts: PostType[] = await fetchCategoryPosts(slug, start, end);
@@ -48,26 +98,20 @@ export default function CategoryPage() {
       return;
     }
 
-    const newUnique = newPosts.filter((post) => !posts.some((p) => p._id === post._id));
+    const existingIds = new Set(postsRef.current.map((post) => post._id));
+    const uniquePosts = newPosts.filter((post) => !existingIds.has(post._id));
 
-    setPosts((prev) => (reset ? newUnique : [...prev, ...newUnique]));
-    setPage((prev) => (reset ? 1 : prev + 1));
+    if (uniquePosts.length > 0) {
+      setPosts((prev) => [...prev, ...uniquePosts]);
+      setPage((prev) => prev + 1);
+    }
 
     if (newPosts.length < pageSize) {
       setHasMore(false);
     }
 
     setLoading(false);
-  };
-
-  useEffect(() => {
-    if (typeof slug === 'string') {
-      setPosts([]);
-      setPage(0);
-      setHasMore(true);
-      loadPosts(true);
-    }
-  }, [slug]);
+  }, [hasMore, loading, slug]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -87,14 +131,14 @@ export default function CategoryPage() {
       if (currentLoader) observer.unobserve(currentLoader);
       observer.disconnect();
     };
-  }, [hasMore, loading]);
+  }, [hasMore, loadPosts, loading]);
 
   return (
     <div className="min-h-screen dark:text-white font-sans">
       <Head>
-        <title>{`Категория: ${slug} – News1.kz`}</title>
+        <title>{`Категория: ${slug} — News1.kz`}</title>
         <meta name="description" content={`Свежие новости категории ${slug}`} />
-        <meta property="og:title" content={`Категория: ${slug} – News1.kz`} />
+        <meta property="og:title" content={`Категория: ${slug} — News1.kz`} />
         <meta property="og:description" content={`Читайте последние новости в категории ${slug}`} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`https://news1.kz/category/${slug}`} />
@@ -102,7 +146,7 @@ export default function CategoryPage() {
         <meta property="og:site_name" content="News1.kz" />
 
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`Категория: ${slug} – News1.kz`} />
+        <meta name="twitter:title" content={`Категория: ${slug} — News1.kz`} />
         <meta name="twitter:description" content={`Свежие новости категории ${slug}`} />
         <meta name="twitter:image" content="https://news1.kz/default-preview.png" />
 
@@ -139,9 +183,7 @@ export default function CategoryPage() {
               Загрузка...
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-400 dark:text-gray-500">
-              Больше новостей нет.
-            </div>
+            <div className="text-center py-8 text-gray-400 dark:text-gray-500">Больше новостей нет.</div>
           )}
         </div>
 

@@ -1,29 +1,35 @@
 ﻿// pages/article/[slug].tsx
 
-import { GetServerSideProps } from 'next';
+import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import { sanity } from '@/lib/sanity';
-import { articleBySlugQuery } from '@/lib/queries';
+import { articleBySlugQuery, getAllSlugs } from '@/lib/queries';
 import FullArticle from '@/components/FullArticle';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Sidebar from '@/components/Sidebar';
 import InfiniteArticleScroll from '@/components/InfiniteArticleScroll';
 
-export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
-  // Cache rendered article HTML at the edge to reduce TTFB on repeated hits.
-  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60');
+export const getStaticPaths: GetStaticPaths = async () => {
+  const slugs: { slug: string }[] = await sanity.fetch(getAllSlugs()).catch(() => []);
 
+  return {
+    paths: slugs.map(({ slug }) => ({ params: { slug } })),
+    fallback: 'blocking',
+  };
+};
+
+export const getStaticProps: GetStaticProps = async ({ params }) => {
   const slug = params?.slug as string;
-
-  const article = await sanity.fetch(articleBySlugQuery, { slug });
+  const article = await sanity.fetch(articleBySlugQuery, { slug }).catch(() => null);
 
   if (!article) {
-    return { notFound: true };
+    return { notFound: true, revalidate: 60 };
   }
 
   return {
     props: { article },
+    revalidate: 300,
   };
 };
 
@@ -34,7 +40,7 @@ export default function ArticlePage({ article }: { article: any }) {
         .map((block: any) => block.children.map((child: any) => child.text).join(''))
         .join(' ')
         .slice(0, 150)
-    : 'РћРїРёСЃР°РЅРёРµ РЅРµРґРѕСЃС‚СѓРїРЅРѕ';
+    : 'Описание недоступно';
 
   const canonicalUrl = `https://news1.kz/article/${article?.slug?.current}`;
   const ogImage = article?.mainImage?.asset?.url || 'https://news1.kz/default-preview.png';
@@ -46,7 +52,7 @@ export default function ArticlePage({ article }: { article: any }) {
   return (
     <div className="min-h-screen dark:text-white font-sans">
       <Head>
-        <title>{article?.title || 'РќРѕРІРѕСЃС‚СЊ'} вЂ“ News1.kz</title>
+        <title>{article?.title || 'Новость'} — News1.kz</title>
         <meta name="description" content={metaDescription} />
 
         <meta property="og:title" content={article?.title || ''} />
