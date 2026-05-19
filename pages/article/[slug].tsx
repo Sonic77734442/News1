@@ -10,7 +10,10 @@ import Footer from '@/components/Footer';
 import Sidebar from '@/components/Sidebar';
 import InfiniteArticleScroll from '@/components/InfiniteArticleScroll';
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
+  // Cache rendered article HTML at the edge to reduce TTFB on repeated hits.
+  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60');
+
   const slug = params?.slug as string;
 
   const article = await sanity.fetch(articleBySlugQuery, { slug });

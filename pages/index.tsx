@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { GetServerSideProps } from 'next';
+import { GetStaticProps } from 'next';
 import TickerTape from '@/components/TickerTape';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -189,9 +189,7 @@ export default function Home({ featuredPost, categoryPosts, recentPosts }: any) 
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  context.res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=59');
-
+export const getStaticProps: GetStaticProps = async () => {
   const featuredQuery = `
     *[_type == "post" && featured == true && !(_id in path("drafts.**"))]
     | order(publishedAt desc)[0] {
@@ -200,7 +198,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       mainImage { asset -> { url } }
     }
   `;
-  const featuredPost = await sanity.fetch(featuredQuery).catch(() => null);
 
   const recentPostsQuery = `
     *[_type == "post" && !(_id in path("drafts.**"))]
@@ -211,12 +208,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       category -> { title, slug }
     }
   `;
-  const recentPosts = await sanity.fetch(recentPostsQuery).catch(() => []);
 
-  const categoryPosts: Record<string, any[]> = {};
-  for (const cat of categories) {
-    categoryPosts[cat.slug] = await fetchCategoryPosts(cat.slug, 0, 3).catch(() => []);
-  }
+  const [featuredPost, recentPosts, ...categoryResults] = await Promise.all([
+    sanity.fetch(featuredQuery).catch(() => null),
+    sanity.fetch(recentPostsQuery).catch(() => []),
+    ...categories.map((cat) => fetchCategoryPosts(cat.slug, 0, 3).catch(() => [])),
+  ]);
+
+  const categoryPosts: Record<string, any[]> = Object.fromEntries(
+    categories.map((cat, index) => [cat.slug, categoryResults[index] || []])
+  );
 
   return {
     props: {
@@ -224,5 +225,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       categoryPosts,
       recentPosts,
     },
+    revalidate: 60,
   };
 };

@@ -3,6 +3,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { sanity } from '@/lib/sanity';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
+
   const query = `
     *[_type == "post"] | order(publishedAt desc)[0...6] {
       _id, title, slug, publishedAt,
