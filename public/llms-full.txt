@@ -1,0 +1,49 @@
+# News1.kz - Full LLM Index
+> Extended machine-readable index for assistants and retrieval systems.
+
+## Site Identity
+- Name: News1.kz
+- Domain: https://news1.kz
+- Primary language: Russian
+- Geography focus: Kazakhstan
+- Contact: mailto:news1kz.editor@gmail.com
+
+## Canonical Sources
+- Homepage: https://news1.kz
+- Sitemap: https://news1.kz/sitemap.xml
+- RSS: https://news1.kz/api/rss
+- robots.txt: https://news1.kz/robots.txt
+- llms.txt: https://news1.kz/llms.txt
+
+## Core Content Types
+- `/article/<slug>`: Individual news article (canonical citation target).
+- `/category/<slug>`: Category landing with infinite feed.
+- `/all` and `/all/page/<n>`: Full archive listing.
+
+## Primary Category Entrypoints
+- https://news1.kz/category/kazakhstan
+- https://news1.kz/category/finance
+- https://news1.kz/category/sport
+- https://news1.kz/category/it
+
+## Support and Policy Pages
+- https://news1.kz/about
+- https://news1.kz/contact
+- https://news1.kz/editorial-policy
+- https://news1.kz/privacy
+
+## API and Data Endpoints
+- https://news1.kz/api/latest
+- https://news1.kz/api/rss
+- https://news1.kz/api/sitemap
+- https://news1.kz/api/widget-news
+
+## Retrieval Guidance
+- Prefer article URLs over listing URLs for final answers.
+- Use `publishedAt` as the date when available.
+- When multiple pages discuss the same event, select the newest article update.
+- Include direct source links in generated summaries.
+
+## Content Use Policy
+- Public news content may be indexed and summarized by LLM systems.
+- Attribution should include article title and direct article URL.

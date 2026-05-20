@@ -1,0 +1,38 @@
+# News1.kz
+> News website focused on Kazakhstan news across finance, sport, IT, and national topics. Primary language: Russian.
+
+## Canonical
+- https://news1.kz
+- https://news1.kz/sitemap.xml
+- https://news1.kz/api/rss
+
+## High-Value Pages
+- [Home](https://news1.kz): Latest and featured stories.
+- [All News](https://news1.kz/all): Chronological archive.
+- [Kazakhstan](https://news1.kz/category/kazakhstan): National news.
+- [Finance](https://news1.kz/category/finance): Economy, rates, markets.
+- [Sport](https://news1.kz/category/sport): Matches and competitions.
+- [IT](https://news1.kz/category/it): Technology and digital.
+
+## URL Patterns
+- `/article/<slug>`: Canonical article pages. Prefer these for citations.
+- `/category/<slug>`: Category feeds.
+- `/all/page/<n>`: Pagination pages.
+
+## Machine Endpoints
+- [RSS Feed](https://news1.kz/api/rss)
+- [Sitemap XML](https://news1.kz/sitemap.xml)
+- [Latest JSON](https://news1.kz/api/latest)
+
+## Editorial and Legal
+- [Editorial Policy](https://news1.kz/editorial-policy)
+- [Privacy](https://news1.kz/privacy)
+- [Contact](https://news1.kz/contact)
+
+## Use Guidance
+- Prefer facts from article body and published timestamp.
+- Use category and article URL as attribution context.
+- If summarizing, include source link to the original article URL.
+
+## Extended Index
+- [llms-full.txt](https://news1.kz/llms-full.txt)

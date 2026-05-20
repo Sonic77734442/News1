@@ -20,6 +20,8 @@ Disallow: /blog-
 
 Host: https://news1.kz
 Sitemap: https://news1.kz/sitemap.xml
+LLMS: https://news1.kz/llms.txt
+LLMS-Full: https://news1.kz/llms-full.txt
 `)
   res.end()
 }

@@ -1,51 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+﻿This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
 
 ## Getting Started
 
-First, run the development server:
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-## Required Environment Variables
-
-Set these variables in your deployment environment:
+Set these in your deployment/runtime environment:
 
 - `FB_PAGE_ID`
 - `FB_PAGE_TOKEN`
 - `FB_WEBHOOK_SECRET`
 - `PING_WEBHOOK_SECRET`
+- `SANITY_PROJECT_ID` (optional, default `8kp3qa75`)
+- `SANITY_DATASET` (optional, default `production`)
+- `SANITY_API_TOKEN` (required for auto content pipeline)
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## Auto News Pipeline (Google Trends -> AI -> Sanity)
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+Run once manually:
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run content:trends:drafts
+```
 
-## Learn More
+For direct publish + social push (Windows-friendly script):
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run content:trends:auto
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+### Pipeline behavior
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Reads Google Trends RSS (`TRENDS_GEO`, default `KZ`).
+- Generates unique article text with OpenAI (if `OPENAI_API_KEY` is set).
+- Selects image from Pexels and uploads it into `mainImage` (if `PEXELS_API_KEY` is set).
+- Creates draft posts by default.
+- Creates published posts when `AUTO_PUBLISH=1`.
+- Pushes published posts to Telegram/Facebook when `AUTO_PUSH_SOCIAL=1`.
 
-## Deploy on Vercel
+### Pipeline variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `TRENDS_GEO` (default: `KZ`)
+- `TRENDS_MAX_ITEMS` (default: `5`)
+- `AUTO_CONTENT_AUTHOR_NAME` (default: `News1.kz`)
+- `DRY_RUN=1` (preview, does not write to Sanity)
+- `AUTO_PUBLISH=1` (create published posts instead of drafts)
+- `AUTO_PUSH_SOCIAL=1` (push to socials after publish)
+- `SITE_URL` (default: `https://news1.kz`)
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL` (default: `gpt-4.1-mini`)
+- `PEXELS_API_KEY`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHANNEL`
+- `FB_PAGE_ID`
+- `FB_PAGE_TOKEN`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+## Scheduled Automation (GitHub Actions)
 
-<!-- tiny update: sync check -->
+Workflow file added: `.github/workflows/auto-news-pipeline.yml`.
+
+It runs every 2 hours and can also be started manually (`workflow_dispatch`).
+
+Set these in GitHub:
+
+- **Secrets:** `SANITY_PROJECT_ID`, `SANITY_DATASET`, `SANITY_API_TOKEN`, `OPENAI_API_KEY`, `PEXELS_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL`, `FB_PAGE_ID`, `FB_PAGE_TOKEN`
+- **Repository Variables:** `OPENAI_MODEL`, `TRENDS_GEO`, `TRENDS_MAX_ITEMS`, `AUTO_CONTENT_AUTHOR_NAME`, `AUTO_PUBLISH`, `AUTO_PUSH_SOCIAL`, `SITE_URL`
