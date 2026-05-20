@@ -347,10 +347,11 @@ function extractFactSnippetsFromSource(sourceHint) {
 function hasRequiredStructure(paragraphs) {
   const items = Array.isArray(paragraphs) ? paragraphs : [];
   if (items.length < 2) return false;
-  const first = String(items[0] || '');
-  if (countFactSignals(first) < 1) return false;
-  if (countWaterPhrases(items.join(' ')) > 3) return false;
-  return true;
+  const joined = items.join(' ');
+  const factSignals = countFactSignals(joined);
+  const hasUncertaintyMarker = /данные уточняются|детали пока ограничены/i.test(joined);
+  if (countWaterPhrases(joined) > 4) return false;
+  return factSignals >= 1 || hasUncertaintyMarker;
 }
 
 function sanitizeLegacyTemplatePhrases(paragraphs) {
@@ -369,6 +370,22 @@ function sanitizeLegacyTemplatePhrases(paragraphs) {
 function containsLegacyTemplatePhrases(paragraphs, shortDescription = '') {
   const all = [shortDescription, ...(Array.isArray(paragraphs) ? paragraphs : [])].join(' ').toLowerCase();
   return all.includes('факты на сейчас') || all.includes('что делать читателю сейчас');
+}
+
+function buildEmergencyStructure(topic, sourceHint) {
+  const sourceFacts = extractFactSnippetsFromSource(sourceHint);
+  const lead =
+    sourceFacts[0] ||
+    `По теме «${topic}» появились новые сообщения в открытых источниках, часть деталей пока уточняется.`;
+  const context =
+    sourceFacts[1] ||
+    'Редакция проверяет официальные публикации и обновит материал при подтверждении новых фактов.';
+
+  return [
+    trimToSentenceBoundary(lead, 220),
+    trimToSentenceBoundary(context, 220),
+    trimToSentenceBoundary('Материал обновляется по мере поступления проверяемых данных.', 180),
+  ];
 }
 
 function enforceStructuredArticle({ title, topic, shortDescription, paragraphs, sourceHint, categorySlug }) {
@@ -1011,19 +1028,31 @@ async function run() {
     }
 
     if (!hasRequiredStructure(structured.paragraphs)) {
-      console.log(`Skip low-structure article: ${topic}`);
-      skippedCount += 1;
-      continue;
+      console.log(`Low-structure source, applying emergency fallback: ${topic}`);
+      structured = {
+        ...structured,
+        title: structured.title || rawTitle,
+        shortDescription: structured.shortDescription || rawDescription,
+        paragraphs: buildEmergencyStructure(topic, sourceHint),
+      };
     }
 
     paragraphs = sanitizeLegacyTemplatePhrases(structured.paragraphs);
     const safeTitle = normalizeSeoTitle(structured.title || rawTitle, topic);
-    const safeDescription = normalizeSeoDescription(structured.shortDescription || rawDescription, paragraphs, topic);
+    let safeDescription = normalizeSeoDescription(structured.shortDescription || rawDescription, paragraphs, topic);
+    safeDescription = safeDescription
+      .replace(/факты на сейчас:\s*/gi, '')
+      .replace(/что делать читателю сейчас:\s*/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
 
     if (containsLegacyTemplatePhrases(paragraphs, safeDescription)) {
-      console.log(`Skip legacy-template article: ${topic}`);
-      skippedCount += 1;
-      continue;
+      paragraphs = sanitizeLegacyTemplatePhrases(paragraphs);
+      safeDescription = safeDescription
+        .replace(/факты на сейчас:\s*/gi, '')
+        .replace(/что делать читателю сейчас:\s*/gi, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
     }
 
     const duplicate = findDuplicatePost({
