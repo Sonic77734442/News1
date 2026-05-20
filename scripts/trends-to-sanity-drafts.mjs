@@ -2,7 +2,6 @@
 import { createClient } from '@sanity/client';
 
 const projectId = process.env.SANITY_PROJECT_ID || '8kp3qa75';
-const dataset = process.env.SANITY_DATASET || 'production';
 const token = process.env.SANITY_API_TOKEN;
 const trendGeo = process.env.TRENDS_GEO || 'KZ';
 const defaultAuthorName = process.env.AUTO_CONTENT_AUTHOR_NAME || 'News1.kz';
@@ -17,6 +16,25 @@ const openAiModel = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
 
 const pexelsApiKey = process.env.PEXELS_API_KEY;
 const siteUrl = (process.env.SITE_URL || 'https://news1.kz').replace(/\/$/, '');
+
+function normalizeDataset(value) {
+  const cleaned = String(value || '')
+    .trim()
+    .replace(/^['"]+|['"]+$/g, '');
+
+  if (!cleaned) return 'production';
+
+  const valid = /^~?[a-z0-9_-]{1,64}$/.test(cleaned);
+  if (!valid) {
+    throw new Error(
+      `Invalid SANITY_DATASET="${cleaned}". Expected values like "production" (lowercase, digits, "_" or "-").`
+    );
+  }
+
+  return cleaned;
+}
+
+const dataset = normalizeDataset(process.env.SANITY_DATASET);
 
 if (!token) {
   console.error('Missing SANITY_API_TOKEN');
