@@ -19,6 +19,22 @@ const googleNewsRssUrls = String(
 const googleNewsMaxItems = Number(process.env.GOOGLE_NEWS_MAX_ITEMS || 8);
 const pipelineMaxItems = Number(process.env.NEWS_MAX_ITEMS || googleNewsMaxItems || 8);
 
+function toSafeUrl(rawUrl) {
+  const input = String(rawUrl || '').trim();
+  if (!input) return '';
+
+  try {
+    const url = new URL(input);
+    const q = url.searchParams.get('q');
+    if (q) {
+      url.searchParams.set('q', q);
+    }
+    return url.toString();
+  } catch {
+    return encodeURI(input);
+  }
+}
+
 const autoPublish = process.env.AUTO_PUBLISH === '1';
 const autoPushSocial = process.env.AUTO_PUSH_SOCIAL === '1';
 
@@ -857,7 +873,9 @@ async function pingSitemap() {
 async function fetchGoogleNewsItems() {
   const collected = [];
 
-  for (const url of googleNewsRssUrls) {
+  for (const rawUrl of googleNewsRssUrls) {
+    const url = toSafeUrl(rawUrl);
+    if (!url) continue;
     try {
       // eslint-disable-next-line no-await-in-loop
       const feed = await parser.parseURL(url);
