@@ -341,13 +341,18 @@ function sanitizeLegacyTemplatePhrases(paragraphs) {
   const cleaned = (Array.isArray(paragraphs) ? paragraphs : [])
     .map((p) => normalizeWhitespace(p))
     .filter(Boolean)
-    .map((p) => p.replace(/^факты на сейчас:\s*/i, ''))
-    .map((p) => p.replace(/^что делать читателю сейчас:\s*/i, ''))
+    .map((p) => p.replace(/факты на сейчас:\s*/gi, ''))
+    .map((p) => p.replace(/что делать читателю сейчас:\s*/gi, ''))
     .map((p) => p.replace(/^\d\)\s*/i, ''))
     .filter(Boolean)
     .map((p) => p.replace(/\s{2,}/g, ' ').trim());
 
   return cleaned;
+}
+
+function containsLegacyTemplatePhrases(paragraphs, shortDescription = '') {
+  const all = [shortDescription, ...(Array.isArray(paragraphs) ? paragraphs : [])].join(' ').toLowerCase();
+  return all.includes('факты на сейчас') || all.includes('что делать читателю сейчас');
 }
 
 function enforceStructuredArticle({ title, topic, shortDescription, paragraphs, sourceHint, categorySlug }) {
@@ -996,6 +1001,12 @@ async function run() {
     paragraphs = sanitizeLegacyTemplatePhrases(structured.paragraphs);
     const safeTitle = normalizeSeoTitle(structured.title || rawTitle, topic);
     const safeDescription = normalizeSeoDescription(structured.shortDescription || rawDescription, paragraphs, topic);
+
+    if (containsLegacyTemplatePhrases(paragraphs, safeDescription)) {
+      console.log(`Skip legacy-template article: ${topic}`);
+      skippedCount += 1;
+      continue;
+    }
 
     const duplicate = findDuplicatePost({
       topic,
