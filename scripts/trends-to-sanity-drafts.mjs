@@ -257,6 +257,23 @@ function normalizeWhitespace(text) {
   return String(text || '').replace(/\s+/g, ' ').trim();
 }
 
+function decodeHtmlEntities(text) {
+  return String(text || '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>');
+}
+
+function cleanFeedText(text) {
+  const withoutTags = String(text || '').replace(/<[^>]*>/g, ' ');
+  const decoded = decodeHtmlEntities(withoutTags);
+  const withoutUrls = decoded.replace(/https?:\/\/\S+/gi, ' ');
+  return normalizeWhitespace(withoutUrls);
+}
+
 function trimToSentenceBoundary(text, maxLength) {
   const clean = normalizeWhitespace(text);
   if (clean.length <= maxLength) return clean;
@@ -324,7 +341,7 @@ function draftLooksWatery(draft) {
 }
 
 function extractFactSnippetsFromSource(sourceHint) {
-  const source = String(sourceHint || '');
+  const source = cleanFeedText(sourceHint);
   if (!source) return [];
 
   const chunks = source
@@ -339,6 +356,7 @@ function extractFactSnippetsFromSource(sourceHint) {
       return { text, score };
     })
     .filter((x) => x.score > 0)
+    .filter((x) => !/news\.google\.com|href=|rss\/articles/i.test(x.text))
     .sort((a, b) => b.score - a.score);
 
   return scored.slice(0, 3).map((x) => trimToSentenceBoundary(x.text, 150));
@@ -901,9 +919,9 @@ async function fetchGoogleNewsItems() {
         const title = normalizeWhitespace(item?.title || '');
         if (!title) continue;
         collected.push({
-          title,
-          contentSnippet: item?.contentSnippet || feed?.title || '',
-          content: item?.content || item?.contentSnippet || '',
+          title: cleanFeedText(title),
+          contentSnippet: cleanFeedText(item?.contentSnippet || feed?.title || ''),
+          content: cleanFeedText(item?.content || item?.contentSnippet || ''),
           link: item?.link || url,
           sourceType: 'news',
         });
