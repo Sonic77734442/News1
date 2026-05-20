@@ -16,6 +16,8 @@ const openAiModel = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
 
 const pexelsApiKey = process.env.PEXELS_API_KEY;
 const siteUrl = (process.env.SITE_URL || 'https://news1.kz').replace(/\/$/, '');
+const nowIsoDate = new Date().toISOString().slice(0, 10);
+const currentYear = String(new Date().getUTCFullYear());
 
 function normalizeDataset(value) {
   const cleaned = String(value || '')
@@ -216,6 +218,33 @@ function extractJson(content) {
   return null;
 }
 
+function extractYears(text) {
+  const matches = String(text || '').match(/\b20\d{2}\b/g) || [];
+  return new Set(matches);
+}
+
+function stripUntrustedYears(text, allowedYears) {
+  return String(text || '').replace(/\b20\d{2}\b/g, (year) => (allowedYears.has(year) ? year : ''));
+}
+
+function sanitizeTemporalReferences(draft, sourceHint) {
+  const trustedYears = extractYears(sourceHint || '');
+  trustedYears.add(currentYear);
+
+  const clean = {
+    ...draft,
+    title: stripUntrustedYears(draft?.title || '', trustedYears).replace(/\s{2,}/g, ' ').trim(),
+    shortDescription: stripUntrustedYears(draft?.shortDescription || '', trustedYears)
+      .replace(/\s{2,}/g, ' ')
+      .trim(),
+    paragraphs: (draft?.paragraphs || []).map((p) =>
+      stripUntrustedYears(p, trustedYears).replace(/\s{2,}/g, ' ').trim()
+    ),
+  };
+
+  return clean;
+}
+
 async function generateUniqueArticle(topic, sourceHint = '') {
   if (!openAiApiKey) {
     return fallbackDraft(topic);
@@ -225,6 +254,11 @@ async function generateUniqueArticle(topic, sourceHint = '') {
     'Ты редактор новостей Казахстана.',
     'Пиши уникально, без копипаста, на русском языке.',
     'Не выдумывай факты: если фактов мало, так и укажи нейтрально.',
+    `Текущая дата: ${nowIsoDate}.`,
+    `Текущий год: ${currentYear}.`,
+    'Фокусируй текст на актуальной повестке текущего года.',
+    'Не указывай прошлые годы (например 2024/2025), если они не подтверждены во входных данных.',
+    'Если дата не подтверждена, пиши без конкретного года.',
     'Верни только JSON без лишнего текста.',
   ].join(' ');
 
@@ -284,12 +318,13 @@ async function generateUniqueArticle(topic, sourceHint = '') {
       return fallbackDraft(topic);
     }
 
-    return {
+    const draft = {
       title: title.slice(0, 120),
       shortDescription: shortDescription.slice(0, 260),
       paragraphs: paragraphs.slice(0, 6),
       imageQuery: imageQuery || topic,
     };
+    return sanitizeTemporalReferences(draft, sourceHint);
   } catch (error) {
     console.warn('Failed to parse OpenAI JSON. Using fallback template.');
     return fallbackDraft(topic);

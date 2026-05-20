@@ -49,7 +49,11 @@ jobs:
           fi
 
       - name: Generate news from trends
-        run: npm run content:trends:drafts
+        shell: bash
+        run: |
+          export AUTO_PUBLISH="${AUTO_PUBLISH:-1}"
+          export AUTO_PUSH_SOCIAL="${AUTO_PUSH_SOCIAL:-0}"
+          npm run content:trends:drafts
         env:
           SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
           SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
