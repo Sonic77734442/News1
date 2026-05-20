@@ -22,7 +22,7 @@ Set these in your deployment/runtime environment:
 - `SANITY_DATASET` (optional, default `production`)
 - `SANITY_API_TOKEN` (required for auto content pipeline)
 
-## Auto News Pipeline (Google Trends -> AI -> Sanity)
+## Auto News Pipeline (Google News -> AI -> Sanity)
 
 Run once manually:
 
@@ -38,8 +38,7 @@ npm run content:trends:auto
 
 ### Pipeline behavior
 
-- Reads Google Trends RSS (`TRENDS_GEO`, default `KZ`) as interest signal.
-- Reads Google News RSS feeds (`GOOGLE_NEWS_RSS_URLS`) as factual signal.
+- Reads Google News RSS feeds (`GOOGLE_NEWS_RSS_URLS`) as primary source.
 - Generates unique article text with OpenAI (if `OPENAI_API_KEY` is set).
 - Enforces article structure: hook, facts block, and actionable \"what to do now\" block.
 - Selects image from Pexels and uploads it into `mainImage` (if `PEXELS_API_KEY` is set).
@@ -49,10 +48,9 @@ npm run content:trends:auto
 
 ### Pipeline variables
 
-- `TRENDS_GEO` (default: `KZ`)
-- `TRENDS_MAX_ITEMS` (default: `5`)
 - `GOOGLE_NEWS_RSS_URLS` (comma-separated RSS URLs)
 - `GOOGLE_NEWS_MAX_ITEMS` (default: `8`)
+- `NEWS_MAX_ITEMS` (default: `GOOGLE_NEWS_MAX_ITEMS`)
 - `AUTO_CONTENT_AUTHOR_NAME` (default: `News1.kz`)
 - `DEDUP_LOOKBACK_DAYS` (default: `21`)
 - `DEDUP_MIN_SIMILARITY` (default: `0.82`)
@@ -81,4 +79,4 @@ It runs every 2 hours and can also be started manually (`workflow_dispatch`).
 Set these in GitHub:
 
 - **Secrets:** `SANITY_PROJECT_ID`, `SANITY_DATASET`, `SANITY_API_TOKEN`, `OPENAI_API_KEY`, `PEXELS_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL`, `FB_PAGE_ID`, `FB_PAGE_TOKEN`, `PING_WEBHOOK_SECRET`
-- **Repository Variables:** `OPENAI_MODEL`, `TRENDS_GEO`, `TRENDS_MAX_ITEMS`, `GOOGLE_NEWS_RSS_URLS`, `GOOGLE_NEWS_MAX_ITEMS`, `AUTO_CONTENT_AUTHOR_NAME`, `AUTO_PUBLISH`, `AUTO_PUSH_SOCIAL`, `SITE_URL`, `FALLBACK_IMAGE_URL`, `ENABLE_FACT_CHECK`, `MIN_FACT_SIGNALS`
+- **Repository Variables:** `OPENAI_MODEL`, `GOOGLE_NEWS_RSS_URLS`, `GOOGLE_NEWS_MAX_ITEMS`, `NEWS_MAX_ITEMS`, `AUTO_CONTENT_AUTHOR_NAME`, `AUTO_PUBLISH`, `AUTO_PUSH_SOCIAL`, `SITE_URL`, `FALLBACK_IMAGE_URL`, `ENABLE_FACT_CHECK`, `MIN_FACT_SIGNALS`

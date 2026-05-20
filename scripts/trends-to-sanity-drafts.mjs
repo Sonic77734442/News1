@@ -3,10 +3,8 @@ import { createClient } from '@sanity/client';
 
 const projectId = process.env.SANITY_PROJECT_ID || '8kp3qa75';
 const token = process.env.SANITY_API_TOKEN;
-const trendGeo = process.env.TRENDS_GEO || 'KZ';
 const defaultAuthorName = process.env.AUTO_CONTENT_AUTHOR_NAME || 'News1.kz';
 const dryRun = process.env.DRY_RUN === '1';
-const maxItems = Number(process.env.TRENDS_MAX_ITEMS || 5);
 const dedupLookbackDays = Number(process.env.DEDUP_LOOKBACK_DAYS || 21);
 const dedupMinSimilarity = Number(process.env.DEDUP_MIN_SIMILARITY || 0.82);
 const minFactSignals = Number(process.env.MIN_FACT_SIGNALS || 2);
@@ -19,6 +17,7 @@ const googleNewsRssUrls = String(
   .map((x) => x.trim())
   .filter(Boolean);
 const googleNewsMaxItems = Number(process.env.GOOGLE_NEWS_MAX_ITEMS || 8);
+const pipelineMaxItems = Number(process.env.NEWS_MAX_ITEMS || googleNewsMaxItems || 8);
 
 const autoPublish = process.env.AUTO_PUBLISH === '1';
 const autoPushSocial = process.env.AUTO_PUSH_SOCIAL === '1';
@@ -65,8 +64,6 @@ const client = createClient({
   useCdn: false,
 });
 
-const trendsUrl = `https://trends.google.com/trending/rss?geo=${encodeURIComponent(trendGeo)}`;
-
 const categoryKeywordHints = {
   finance: ['тенге', 'доллар', 'инфляц', 'ставк', 'банк', 'рынок', 'нефт', 'налог', 'ипотек', 'эконом', 'бюджет'],
   sport: ['матч', 'чемпион', 'футбол', 'хоккей', 'бокс', 'спорт', 'турнир', 'гол', 'лига', 'уефа'],
@@ -102,7 +99,7 @@ function toBaseSlug(title) {
     .replace(/-+/g, '-')
     .slice(0, 70);
 
-  return base || `trend-${Date.now()}`;
+  return base || `news-${Date.now()}`;
 }
 
 async function getCategories() {
@@ -310,21 +307,6 @@ function draftLooksWatery(draft) {
   return factSignals < minFactSignals || waterSignals > factSignals + 1;
 }
 
-function guessAudienceByCategorySlug(categorySlug, topic) {
-  const slug = String(categorySlug || '').toLowerCase();
-  const hay = String(topic || '').toLowerCase();
-  if (slug.includes('finance') || hay.includes('тенге') || hay.includes('ставк') || hay.includes('банк')) {
-    return 'заемщиков, вкладчиков и тех, кто следит за курсом и ценами';
-  }
-  if (slug.includes('sport') || hay.includes('матч') || hay.includes('турнир')) {
-    return 'болельщиков, клубы и участников турниров';
-  }
-  if (slug.includes('it') || hay.includes('ai') || hay.includes('техно')) {
-    return 'пользователей сервисов, разработчиков и digital-бизнес';
-  }
-  return 'жителей Казахстана и тех, кого тема затрагивает напрямую';
-}
-
 function extractFactSnippetsFromSource(sourceHint) {
   const source = String(sourceHint || '');
   if (!source) return [];
@@ -346,70 +328,43 @@ function extractFactSnippetsFromSource(sourceHint) {
   return scored.slice(0, 3).map((x) => trimToSentenceBoundary(x.text, 150));
 }
 
-function buildActionChecklist(topic, categorySlug) {
-  const slug = String(categorySlug || '').toLowerCase();
-  if (slug.includes('finance')) {
-    return [
-      'Проверить официальные курсы и тарифы в вашем банке.',
-      'Сверить даты изменений и возможные комиссии по операциям.',
-      'Оценить личный бюджет на ближайшие 2-4 недели с учетом новых условий.',
-    ];
-  }
-  if (slug.includes('sport')) {
-    return [
-      'Проверить официальное расписание и итоговые протоколы.',
-      'Уточнить изменения по составам, дисквалификациям и регламенту.',
-      'Сверить время трансляций и источники оперативных обновлений.',
-    ];
-  }
-  if (slug.includes('it')) {
-    return [
-      'Проверить официальные релиз-ноты или заявления компаний.',
-      'Оценить влияние новости на используемые сервисы и доступы.',
-      'Подготовить резервный сценарий, если изменения затрагивают работу продукта.',
-    ];
-  }
-
-  return [
-    'Проверить первоисточник и дату публикации обновления.',
-    'Сверить, касается ли новость вашего региона, услуги или статуса.',
-    'Сохранить официальный канал для повторной проверки в течение дня.',
-  ];
-}
-
 function hasRequiredStructure(paragraphs) {
   const items = Array.isArray(paragraphs) ? paragraphs : [];
-  const hasHook = Boolean(items[0]) && items[0].toLowerCase().includes('это важно');
-  const hasFacts = items.some((p) => p.toLowerCase().includes('факты на сейчас'));
-  const hasActions = items.some((p) => p.toLowerCase().includes('что делать читателю сейчас'));
-  return hasHook && hasFacts && hasActions;
+  if (items.length < 2) return false;
+  const first = String(items[0] || '');
+  if (countFactSignals(first) < 1) return false;
+  if (countWaterPhrases(items.join(' ')) > 3) return false;
+  return true;
 }
 
 function enforceStructuredArticle({ title, topic, shortDescription, paragraphs, sourceHint, categorySlug }) {
   const sourceFacts = extractFactSnippetsFromSource(sourceHint);
-  const usefulParagraph = (Array.isArray(paragraphs) ? paragraphs : []).find((p) => countFactSignals(p) >= 1);
-  const audience = guessAudienceByCategorySlug(categorySlug, topic);
-  const hook = trimToSentenceBoundary(
-    `${topic}. ${usefulParagraph || 'Ключевые детали по теме продолжают уточняться в официальных источниках.'} Это важно для ${audience}.`,
-    220
-  );
+  const cleanedGenerated = (Array.isArray(paragraphs) ? paragraphs : [])
+    .map((p) => normalizeWhitespace(p))
+    .filter(Boolean)
+    .filter((p) => !/^факты на сейчас:/i.test(p))
+    .filter((p) => !/^что делать читателю сейчас:/i.test(p))
+    .filter((p) => !/^\d\)\s/.test(p));
 
-  const factsLine = sourceFacts.length
-    ? `Факты на сейчас: ${sourceFacts.map((f, idx) => `${idx + 1}) ${f}`).join(' ')}`
-    : 'Факты на сейчас: подтвержденные количественные данные ограничены, данные уточняются.';
+  const factLead =
+    sourceFacts[0] ||
+    cleanedGenerated.find((p) => countFactSignals(p) >= 2) ||
+    `По теме «${topic}» подтвержденные детали пока ограничены, данные уточняются.`;
 
-  const actions = buildActionChecklist(topic, categorySlug);
-  const actionsLine = `Что делать читателю сейчас: 1) ${actions[0]} 2) ${actions[1]} 3) ${actions[2]}`;
+  const contextual =
+    cleanedGenerated.find((p) => p !== factLead && p.length > 40) ||
+    sourceFacts[1] ||
+    'Редакция отслеживает официальные обновления и дополняет материал по мере подтверждений.';
+
+  const whyItMatters =
+    cleanedGenerated.find((p) => /важно|влияет|значит|последств/i.test(p)) ||
+    `Событие важно для аудитории в Казахстане: от дальнейших решений по теме зависят практические последствия.`;
 
   const structured = [
-    hook,
-    trimToSentenceBoundary(factsLine, 400),
-    trimToSentenceBoundary(actionsLine, 320),
+    trimToSentenceBoundary(factLead, 220),
+    trimToSentenceBoundary(contextual, 260),
+    trimToSentenceBoundary(whyItMatters, 220),
   ];
-
-  if (sourceFacts.length && usefulParagraph && countFactSignals(usefulParagraph) >= 2) {
-    structured.splice(2, 0, trimToSentenceBoundary(`Контекст: ${usefulParagraph}`, 260));
-  }
 
   return {
     title: normalizeWhitespace(title || `${topic}: что важно знать сегодня`),
@@ -525,7 +480,8 @@ async function rewriteWithFactCheck(topic, sourceHint, draft, isBreaking = false
             'Удали общие фразы и воду.',
             'Добавь конкретику: цифры, даты, имена, организации.',
             'Если точных данных мало, явно пиши: \"данные уточняются\".',
-            'Соблюдай структуру: 1) хук (что произошло + для кого важно), 2) факты на сейчас, 3) что делать читателю сейчас.',
+            'Пиши как живой новостной репортер: короткий лид с фактом, затем контекст и почему это важно.',
+            'Никаких чеклистов, нумерованных списков и формулировок в стиле шаблона.',
             'Верни только JSON.',
           ].join(' '),
         },
@@ -587,13 +543,14 @@ async function generateUniqueArticle(topic, sourceHint = '') {
     'Не выдумывай факты: если фактов мало, так и укажи нейтрально.',
     'Избегай пустых фраз и размытой аналитики.',
     'Опирайся на конкретику: цифры, даты, имена, организации, прямые факты.',
-    'Google Trends используй только как сигнал интереса, а фактологию бери из новостных источников в sourceHint.',
+    'Фактологию бери только из новостных источников в sourceHint.',
     `Текущая дата: ${nowIsoDate}.`,
     `Текущий год: ${currentYear}.`,
     'Фокусируй текст на актуальной повестке текущего года.',
     'Не указывай прошлые годы (например 2024/2025), если они не подтверждены во входных данных.',
     'Если дата не подтверждена, пиши без конкретного года.',
-    'Структура текста обязательна: 1) хук (что произошло + для кого важно), 2) факты на сейчас, 3) что делать читателю сейчас.',
+    'Пиши в журналистском стиле: лид с фактом, затем контекст, затем почему это важно.',
+    'Запрещены искусственные чеклисты, нумерация 1)2)3), канцелярские фразы.',
     'Верни только JSON без лишнего текста.',
   ].join(' ');
 
@@ -604,7 +561,7 @@ async function generateUniqueArticle(topic, sourceHint = '') {
     outputSchema: {
       title: 'string, до 90 символов',
       shortDescription: 'string, 140-220 символов',
-      paragraphs: 'array из 3-5 строк: хук, факты, действия, при необходимости контекст',
+      paragraphs: 'array из 3-4 строк: лид, контекст, значение/последствия',
       imageQuery: 'string, 2-5 слов для поиска фото (english preferred)',
     },
   };
@@ -909,7 +866,7 @@ async function fetchGoogleNewsItems() {
 function mergeAndDedupSourceItems(primaryItems, secondaryItems) {
   const merged = primaryItems.map((x) => ({
     ...x,
-    sourceType: x?.sourceType || 'trends',
+    sourceType: x?.sourceType || 'news',
     newsFacts: [],
   }));
 
@@ -919,7 +876,6 @@ function mergeAndDedupSourceItems(primaryItems, secondaryItems) {
       duplicate.newsFacts.push(
         [candidate?.title, candidate?.contentSnippet, candidate?.content, candidate?.link].filter(Boolean).join(' | ')
       );
-      duplicate.sourceType = duplicate.sourceType === 'trends' ? 'trends+news' : duplicate.sourceType;
       continue;
     }
 
@@ -932,17 +888,17 @@ function mergeAndDedupSourceItems(primaryItems, secondaryItems) {
     });
   }
 
-  return merged.slice(0, Math.max(1, maxItems));
+  return merged.slice(0, Math.max(1, pipelineMaxItems));
 }
 
 function buildSourceHint(item) {
-  const trendPart = [item?.contentSnippet, item?.content, item?.link].filter(Boolean).join(' | ');
+  const sourcePart = [item?.contentSnippet, item?.content, item?.link].filter(Boolean).join(' | ');
   const factsPart = Array.isArray(item?.newsFacts) ? item.newsFacts.filter(Boolean).join(' || ') : '';
 
   return [
-    'RULE: Google Trends is only an interest signal. Google News items are factual signals and must dominate factual claims.',
+    'RULE: Build the article only from factual signals in Google News sources. Do not infer missing facts.',
     `SOURCE_TYPE: ${item?.sourceType || 'unknown'}`,
-    trendPart ? `TREND_SIGNAL: ${trendPart}` : '',
+    sourcePart ? `NEWS_SOURCE: ${sourcePart}` : '',
     factsPart ? `NEWS_FACTS: ${factsPart}` : '',
   ]
     .filter(Boolean)
@@ -950,26 +906,9 @@ function buildSourceHint(item) {
 }
 
 async function run() {
-  console.log(`Fetching sources: trends + Google News RSS`);
-  const [trendItems, googleItems] = await Promise.all([
-    parser
-      .parseURL(trendsUrl)
-      .then((feed) =>
-        (feed.items || [])
-          .slice(0, Math.max(1, maxItems))
-          .map((item) => ({
-            ...item,
-            sourceType: 'trends',
-            newsFacts: [],
-          }))
-      )
-      .catch((error) => {
-        console.warn(`Trends RSS failed: ${error?.message || error}`);
-        return [];
-      }),
-    fetchGoogleNewsItems(),
-  ]);
-  const items = mergeAndDedupSourceItems(trendItems, googleItems);
+  console.log('Fetching sources: Google News RSS');
+  const googleItems = await fetchGoogleNewsItems();
+  const items = mergeAndDedupSourceItems([], googleItems);
 
   if (!items.length) {
     console.log('No source items found.');

@@ -48,7 +48,7 @@ jobs:
             exit 1
           fi
 
-      - name: Generate news from trends
+      - name: Generate news
         shell: bash
         run: |
           export AUTO_PUBLISH="${AUTO_PUBLISH:-1}"
@@ -61,10 +61,9 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
-          TRENDS_GEO: ${{ vars.TRENDS_GEO }}
-          TRENDS_MAX_ITEMS: ${{ vars.TRENDS_MAX_ITEMS }}
           GOOGLE_NEWS_RSS_URLS: ${{ vars.GOOGLE_NEWS_RSS_URLS }}
           GOOGLE_NEWS_MAX_ITEMS: ${{ vars.GOOGLE_NEWS_MAX_ITEMS }}
+          NEWS_MAX_ITEMS: ${{ vars.NEWS_MAX_ITEMS }}
           AUTO_CONTENT_AUTHOR_NAME: ${{ vars.AUTO_CONTENT_AUTHOR_NAME }}
           AUTO_PUBLISH: ${{ vars.AUTO_PUBLISH }}
           AUTO_PUSH_SOCIAL: ${{ vars.AUTO_PUSH_SOCIAL }}
