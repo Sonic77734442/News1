@@ -337,6 +337,19 @@ function hasRequiredStructure(paragraphs) {
   return true;
 }
 
+function sanitizeLegacyTemplatePhrases(paragraphs) {
+  const cleaned = (Array.isArray(paragraphs) ? paragraphs : [])
+    .map((p) => normalizeWhitespace(p))
+    .filter(Boolean)
+    .map((p) => p.replace(/^факты на сейчас:\s*/i, ''))
+    .map((p) => p.replace(/^что делать читателю сейчас:\s*/i, ''))
+    .map((p) => p.replace(/^\d\)\s*/i, ''))
+    .filter(Boolean)
+    .map((p) => p.replace(/\s{2,}/g, ' ').trim());
+
+  return cleaned;
+}
+
 function enforceStructuredArticle({ title, topic, shortDescription, paragraphs, sourceHint, categorySlug }) {
   const sourceFacts = extractFactSnippetsFromSource(sourceHint);
   const cleanedGenerated = (Array.isArray(paragraphs) ? paragraphs : [])
@@ -980,7 +993,7 @@ async function run() {
       continue;
     }
 
-    paragraphs = structured.paragraphs;
+    paragraphs = sanitizeLegacyTemplatePhrases(structured.paragraphs);
     const safeTitle = normalizeSeoTitle(structured.title || rawTitle, topic);
     const safeDescription = normalizeSeoDescription(structured.shortDescription || rawDescription, paragraphs, topic);
 
