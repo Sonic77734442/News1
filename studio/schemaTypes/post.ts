@@ -37,6 +37,12 @@ export default {
       initialValue: () => new Date().toISOString(),
     },
     {
+      name: 'dateModified',
+      title: 'Дата обновления',
+      type: 'datetime',
+      initialValue: () => new Date().toISOString(),
+    },
+    {
       name: 'shortDescription',
       title: 'Краткое описание',
       type: 'string',

@@ -71,3 +71,5 @@ jobs:
           TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          PING_WEBHOOK_SECRET: ${{ secrets.PING_WEBHOOK_SECRET }}
+          FALLBACK_IMAGE_URL: ${{ vars.FALLBACK_IMAGE_URL }}

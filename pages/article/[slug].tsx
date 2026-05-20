@@ -34,18 +34,19 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 };
 
 export default function ArticlePage({ article }: { article: any }) {
-  const metaDescription = Array.isArray(article.body)
+  const bodyDescription = Array.isArray(article.body)
     ? article.body
         .filter((block: any) => block._type === 'block' && Array.isArray(block.children))
         .map((block: any) => block.children.map((child: any) => child.text).join(''))
         .join(' ')
         .slice(0, 150)
     : 'Описание недоступно';
+  const metaDescription = article?.shortDescription || article?.description || bodyDescription;
 
   const canonicalUrl = `https://news1.kz/article/${article?.slug?.current}`;
   const ogImage = article?.mainImage?.asset?.url || 'https://news1.kz/default-preview.png';
   const publishedTime = article?.publishedAt || article?._createdAt;
-  const modifiedTime = article?.updatedAt || article?.publishedAt || article?._createdAt;
+  const modifiedTime = article?.dateModified || article?._updatedAt || article?.publishedAt || article?._createdAt;
   const authorName = article?.author?.name || 'News1.kz';
   const categoryTitle = article?.category?.title;
 

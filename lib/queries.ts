@@ -12,6 +12,9 @@ export const articleBySlugQuery = `
     title,
     slug,
     publishedAt,
+    _updatedAt,
+    dateModified,
+    shortDescription,
     mainImage {
       asset -> { url }
     },

@@ -50,10 +50,13 @@ npm run content:trends:auto
 - `TRENDS_GEO` (default: `KZ`)
 - `TRENDS_MAX_ITEMS` (default: `5`)
 - `AUTO_CONTENT_AUTHOR_NAME` (default: `News1.kz`)
+- `DEDUP_LOOKBACK_DAYS` (default: `21`)
+- `DEDUP_MIN_SIMILARITY` (default: `0.82`)
 - `DRY_RUN=1` (preview, does not write to Sanity)
 - `AUTO_PUBLISH=1` (create published posts instead of drafts)
 - `AUTO_PUSH_SOCIAL=1` (push to socials after publish)
 - `SITE_URL` (default: `https://news1.kz`)
+- `FALLBACK_IMAGE_URL` (optional, default: `https://news1.kz/default-preview.png`)
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL` (default: `gpt-4.1-mini`)
 - `PEXELS_API_KEY`
@@ -61,6 +64,7 @@ npm run content:trends:auto
 - `TELEGRAM_CHANNEL`
 - `FB_PAGE_ID`
 - `FB_PAGE_TOKEN`
+- `PING_WEBHOOK_SECRET` (optional, enables automatic sitemap ping after publish)
 
 ## Scheduled Automation (GitHub Actions)
 
@@ -70,5 +74,5 @@ It runs every 2 hours and can also be started manually (`workflow_dispatch`).
 
 Set these in GitHub:
 
-- **Secrets:** `SANITY_PROJECT_ID`, `SANITY_DATASET`, `SANITY_API_TOKEN`, `OPENAI_API_KEY`, `PEXELS_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL`, `FB_PAGE_ID`, `FB_PAGE_TOKEN`
-- **Repository Variables:** `OPENAI_MODEL`, `TRENDS_GEO`, `TRENDS_MAX_ITEMS`, `AUTO_CONTENT_AUTHOR_NAME`, `AUTO_PUBLISH`, `AUTO_PUSH_SOCIAL`, `SITE_URL`
+- **Secrets:** `SANITY_PROJECT_ID`, `SANITY_DATASET`, `SANITY_API_TOKEN`, `OPENAI_API_KEY`, `PEXELS_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL`, `FB_PAGE_ID`, `FB_PAGE_TOKEN`, `PING_WEBHOOK_SECRET`
+- **Repository Variables:** `OPENAI_MODEL`, `TRENDS_GEO`, `TRENDS_MAX_ITEMS`, `AUTO_CONTENT_AUTHOR_NAME`, `AUTO_PUBLISH`, `AUTO_PUSH_SOCIAL`, `SITE_URL`, `FALLBACK_IMAGE_URL`

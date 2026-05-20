@@ -7,6 +7,8 @@ const trendGeo = process.env.TRENDS_GEO || 'KZ';
 const defaultAuthorName = process.env.AUTO_CONTENT_AUTHOR_NAME || 'News1.kz';
 const dryRun = process.env.DRY_RUN === '1';
 const maxItems = Number(process.env.TRENDS_MAX_ITEMS || 5);
+const dedupLookbackDays = Number(process.env.DEDUP_LOOKBACK_DAYS || 21);
+const dedupMinSimilarity = Number(process.env.DEDUP_MIN_SIMILARITY || 0.82);
 
 const autoPublish = process.env.AUTO_PUBLISH === '1';
 const autoPushSocial = process.env.AUTO_PUSH_SOCIAL === '1';
@@ -16,6 +18,7 @@ const openAiModel = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
 
 const pexelsApiKey = process.env.PEXELS_API_KEY;
 const siteUrl = (process.env.SITE_URL || 'https://news1.kz').replace(/\/$/, '');
+const fallbackImageUrl = process.env.FALLBACK_IMAGE_URL || `${siteUrl}/default-preview.png`;
 const nowIsoDate = new Date().toISOString().slice(0, 10);
 const currentYear = String(new Date().getUTCFullYear());
 
@@ -227,18 +230,114 @@ function stripUntrustedYears(text, allowedYears) {
   return String(text || '').replace(/\b20\d{2}\b/g, (year) => (allowedYears.has(year) ? year : ''));
 }
 
+function normalizeWhitespace(text) {
+  return String(text || '').replace(/\s+/g, ' ').trim();
+}
+
+function trimToSentenceBoundary(text, maxLength) {
+  const clean = normalizeWhitespace(text);
+  if (clean.length <= maxLength) return clean;
+  const sliced = clean.slice(0, maxLength);
+  const lastPunctuation = Math.max(sliced.lastIndexOf('.'), sliced.lastIndexOf('!'), sliced.lastIndexOf('?'));
+  if (lastPunctuation > 80) return sliced.slice(0, lastPunctuation + 1).trim();
+  return `${sliced.slice(0, Math.max(0, maxLength - 1)).trim()}…`;
+}
+
+function normalizeSeoTitle(title, topic) {
+  const raw = normalizeWhitespace(title || `${topic}: что важно знать сегодня`);
+  return trimToSentenceBoundary(raw, 78);
+}
+
+function normalizeSeoDescription(description, paragraphs, topic) {
+  const base = normalizeWhitespace(description || '');
+  if (base) return trimToSentenceBoundary(base, 170);
+
+  const paragraphFallback = normalizeWhitespace((paragraphs || []).join(' '));
+  if (paragraphFallback) return trimToSentenceBoundary(paragraphFallback, 170);
+
+  return trimToSentenceBoundary(`Краткий разбор темы «${topic}»: факты, контекст и последствия.`, 170);
+}
+
+function normalizeForDedup(text) {
+  const source = normalizeWhitespace(String(text || '').toLowerCase());
+  return transliterate(source)
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function makeTokenSet(text) {
+  return new Set(
+    normalizeForDedup(text)
+      .split(' ')
+      .filter((token) => token.length > 2)
+  );
+}
+
+function jaccardSimilarity(aSet, bSet) {
+  if (!aSet.size || !bSet.size) return 0;
+  let intersection = 0;
+  for (const token of aSet) {
+    if (bSet.has(token)) intersection += 1;
+  }
+  const union = aSet.size + bSet.size - intersection;
+  return union ? intersection / union : 0;
+}
+
+async function fetchRecentPostsForDedup() {
+  const lookbackDays = Number.isFinite(dedupLookbackDays) && dedupLookbackDays > 0 ? dedupLookbackDays : 21;
+  const since = new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000).toISOString();
+
+  const recent = await client.fetch(
+    '*[_type == "post" && coalesce(publishedAt, _createdAt) >= $since]{ _id, title, shortDescription, publishedAt, _createdAt, "slug": slug.current }',
+    { since }
+  );
+
+  return Array.isArray(recent) ? recent : [];
+}
+
+function isLikelyDuplicate(candidateText, existingPost) {
+  const candidate = normalizeForDedup(candidateText);
+  const existingTitle = normalizeForDedup(existingPost?.title || '');
+  if (!candidate || !existingTitle) return false;
+
+  if (candidate === existingTitle) return true;
+
+  if (candidate.length >= 24 && existingTitle.length >= 24) {
+    if (candidate.includes(existingTitle) || existingTitle.includes(candidate)) {
+      return true;
+    }
+  }
+
+  const candidateTokens = makeTokenSet(candidate);
+  const existingTokens = makeTokenSet(existingTitle);
+  const similarity = jaccardSimilarity(candidateTokens, existingTokens);
+  const minSimilarity = Number.isFinite(dedupMinSimilarity) ? dedupMinSimilarity : 0.82;
+  return similarity >= minSimilarity;
+}
+
+function findDuplicatePost({ topic, title, recentPosts }) {
+  const variants = [topic, title].filter(Boolean);
+  for (const existing of recentPosts) {
+    for (const value of variants) {
+      if (isLikelyDuplicate(value, existing)) {
+        return existing;
+      }
+    }
+  }
+  return null;
+}
+
 function sanitizeTemporalReferences(draft, sourceHint) {
   const trustedYears = extractYears(sourceHint || '');
   trustedYears.add(currentYear);
 
   const clean = {
     ...draft,
-    title: stripUntrustedYears(draft?.title || '', trustedYears).replace(/\s{2,}/g, ' ').trim(),
-    shortDescription: stripUntrustedYears(draft?.shortDescription || '', trustedYears)
-      .replace(/\s{2,}/g, ' ')
-      .trim(),
+    title: normalizeWhitespace(stripUntrustedYears(draft?.title || '', trustedYears)),
+    shortDescription: normalizeWhitespace(stripUntrustedYears(draft?.shortDescription || '', trustedYears)),
     paragraphs: (draft?.paragraphs || []).map((p) =>
-      stripUntrustedYears(p, trustedYears).replace(/\s{2,}/g, ' ').trim()
+      normalizeWhitespace(stripUntrustedYears(p, trustedYears))
     ),
   };
 
@@ -425,6 +524,20 @@ async function uploadImageAsset(imageUrl, slug) {
   }
 }
 
+async function resolveMainImageRef({ imageQuery, slug }) {
+  const pexelsImage = await fetchPexelsImage(imageQuery);
+  const selectedUrl = pexelsImage?.imageUrl || fallbackImageUrl;
+  if (!selectedUrl) return null;
+
+  const assetId = await uploadImageAsset(selectedUrl, slug);
+  if (!assetId) return null;
+
+  return {
+    _type: 'image',
+    asset: { _type: 'reference', _ref: assetId },
+  };
+}
+
 async function postToTelegram({ title, slug, excerpt }) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const channel = process.env.TELEGRAM_CHANNEL;
@@ -499,6 +612,30 @@ async function pushSocial(payload) {
   return results;
 }
 
+async function pingSitemap() {
+  const pingSecret = process.env.PING_WEBHOOK_SECRET;
+  if (!pingSecret) {
+    return { skipped: 'Missing PING_WEBHOOK_SECRET' };
+  }
+
+  try {
+    const response = await fetch(`${siteUrl}/api/ping`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: pingSecret }),
+    });
+
+    if (!response.ok) {
+      const details = await response.text();
+      return { error: `Ping failed (${response.status}): ${details}` };
+    }
+
+    return { success: true };
+  } catch (error) {
+    return { error: error?.message || String(error) };
+  }
+}
+
 async function run() {
   console.log(`Fetching trends from: ${trendsUrl}`);
   const feed = await parser.parseURL(trendsUrl);
@@ -512,6 +649,7 @@ async function run() {
   const authorId = await getOrCreateAuthor();
   const categories = await getCategories();
   const fallbackCategoryRef = categories[0] || (await getAnyCategoryRef());
+  const recentPostsForDedup = await fetchRecentPostsForDedup();
 
   let createdCount = 0;
   let skippedCount = 0;
@@ -535,27 +673,32 @@ async function run() {
     // eslint-disable-next-line no-await-in-loop
     const pickedCategory = await pickCategory(categories, topic, generated);
 
-    const safeTitle = generated.title || `${topic}: что важно знать сегодня`;
-    const safeDescription = generated.shortDescription || `Разбор темы «${topic}».`;
+    const rawTitle = generated.title || `${topic}: что важно знать сегодня`;
+    const rawDescription = generated.shortDescription || `Разбор темы «${topic}».`;
     const paragraphs = generated.paragraphs?.length ? generated.paragraphs : fallbackDraft(topic).paragraphs;
+    const safeTitle = normalizeSeoTitle(rawTitle, topic);
+    const safeDescription = normalizeSeoDescription(rawDescription, paragraphs, topic);
 
-    let imageAssetRef;
+    const duplicate = findDuplicatePost({
+      topic,
+      title: safeTitle,
+      recentPosts: recentPostsForDedup,
+    });
+    if (duplicate?._id) {
+      console.log(`Skip duplicate content: "${safeTitle}" ~= "${duplicate.title}" (${duplicate.slug || duplicate._id})`);
+      skippedCount += 1;
+      continue;
+    }
+
     const imageQuery = generated.imageQuery || topic;
-    // eslint-disable-next-line no-await-in-loop
-    const pexelsImage = await fetchPexelsImage(imageQuery);
-
-    if (pexelsImage?.imageUrl && !dryRun) {
+    let imageAssetRef;
+    if (!dryRun) {
       // eslint-disable-next-line no-await-in-loop
-      const assetId = await uploadImageAsset(pexelsImage.imageUrl, slug);
-      if (assetId) {
-        imageAssetRef = {
-          _type: 'image',
-          asset: { _type: 'reference', _ref: assetId },
-        };
-      }
+      imageAssetRef = await resolveMainImageRef({ imageQuery, slug });
     }
 
     const docId = autoPublish ? crypto.randomUUID() : `drafts.${crypto.randomUUID()}`;
+    const nowIso = new Date().toISOString();
 
     const postDoc = {
       _id: docId,
@@ -566,7 +709,8 @@ async function run() {
       category: (pickedCategory?._id || fallbackCategoryRef?._id)
         ? { _type: 'reference', _ref: pickedCategory?._id || fallbackCategoryRef?._id }
         : undefined,
-      publishedAt: new Date().toISOString(),
+      publishedAt: nowIso,
+      dateModified: nowIso,
       shortDescription: safeDescription,
       featured: false,
       body: makeBodyBlocks(paragraphs),
@@ -575,6 +719,12 @@ async function run() {
 
     if (dryRun) {
       console.log(`[DRY_RUN] Would create ${autoPublish ? 'published' : 'draft'} post: ${safeTitle}`);
+      recentPostsForDedup.push({
+        _id: `dry-${slug}`,
+        title: safeTitle,
+        shortDescription: safeDescription,
+        slug,
+      });
       createdCount += 1;
       continue;
     }
@@ -594,7 +744,20 @@ async function run() {
       console.log(`Social push: ${JSON.stringify(pushResults)}`);
     }
 
+    recentPostsForDedup.push({
+      _id: postDoc._id,
+      title: safeTitle,
+      shortDescription: safeDescription,
+      slug,
+      publishedAt: postDoc.publishedAt,
+    });
+
     createdCount += 1;
+  }
+
+  if (!dryRun && autoPublish && createdCount > 0) {
+    const pingResult = await pingSitemap();
+    console.log(`Sitemap ping: ${JSON.stringify(pingResult)}`);
   }
 
   console.log(`Done. Created: ${createdCount}, skipped: ${skippedCount}`);
