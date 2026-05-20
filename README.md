@@ -38,8 +38,10 @@ npm run content:trends:auto
 
 ### Pipeline behavior
 
-- Reads Google Trends RSS (`TRENDS_GEO`, default `KZ`).
+- Reads Google Trends RSS (`TRENDS_GEO`, default `KZ`) as interest signal.
+- Reads Google News RSS feeds (`GOOGLE_NEWS_RSS_URLS`) as factual signal.
 - Generates unique article text with OpenAI (if `OPENAI_API_KEY` is set).
+- Enforces article structure: hook, facts block, and actionable \"what to do now\" block.
 - Selects image from Pexels and uploads it into `mainImage` (if `PEXELS_API_KEY` is set).
 - Creates draft posts by default.
 - Creates published posts when `AUTO_PUBLISH=1`.
@@ -49,9 +51,13 @@ npm run content:trends:auto
 
 - `TRENDS_GEO` (default: `KZ`)
 - `TRENDS_MAX_ITEMS` (default: `5`)
+- `GOOGLE_NEWS_RSS_URLS` (comma-separated RSS URLs)
+- `GOOGLE_NEWS_MAX_ITEMS` (default: `8`)
 - `AUTO_CONTENT_AUTHOR_NAME` (default: `News1.kz`)
 - `DEDUP_LOOKBACK_DAYS` (default: `21`)
 - `DEDUP_MIN_SIMILARITY` (default: `0.82`)
+- `ENABLE_FACT_CHECK` (default: `1`, second-pass factual rewrite)
+- `MIN_FACT_SIGNALS` (default: `2`, minimum numeric/factual density)
 - `DRY_RUN=1` (preview, does not write to Sanity)
 - `AUTO_PUBLISH=1` (create published posts instead of drafts)
 - `AUTO_PUSH_SOCIAL=1` (push to socials after publish)
@@ -75,4 +81,4 @@ It runs every 2 hours and can also be started manually (`workflow_dispatch`).
 Set these in GitHub:
 
 - **Secrets:** `SANITY_PROJECT_ID`, `SANITY_DATASET`, `SANITY_API_TOKEN`, `OPENAI_API_KEY`, `PEXELS_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL`, `FB_PAGE_ID`, `FB_PAGE_TOKEN`, `PING_WEBHOOK_SECRET`
-- **Repository Variables:** `OPENAI_MODEL`, `TRENDS_GEO`, `TRENDS_MAX_ITEMS`, `AUTO_CONTENT_AUTHOR_NAME`, `AUTO_PUBLISH`, `AUTO_PUSH_SOCIAL`, `SITE_URL`, `FALLBACK_IMAGE_URL`
+- **Repository Variables:** `OPENAI_MODEL`, `TRENDS_GEO`, `TRENDS_MAX_ITEMS`, `GOOGLE_NEWS_RSS_URLS`, `GOOGLE_NEWS_MAX_ITEMS`, `AUTO_CONTENT_AUTHOR_NAME`, `AUTO_PUBLISH`, `AUTO_PUSH_SOCIAL`, `SITE_URL`, `FALLBACK_IMAGE_URL`, `ENABLE_FACT_CHECK`, `MIN_FACT_SIGNALS`

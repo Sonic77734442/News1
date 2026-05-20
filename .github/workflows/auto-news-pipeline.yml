@@ -63,6 +63,8 @@ jobs:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           TRENDS_GEO: ${{ vars.TRENDS_GEO }}
           TRENDS_MAX_ITEMS: ${{ vars.TRENDS_MAX_ITEMS }}
+          GOOGLE_NEWS_RSS_URLS: ${{ vars.GOOGLE_NEWS_RSS_URLS }}
+          GOOGLE_NEWS_MAX_ITEMS: ${{ vars.GOOGLE_NEWS_MAX_ITEMS }}
           AUTO_CONTENT_AUTHOR_NAME: ${{ vars.AUTO_CONTENT_AUTHOR_NAME }}
           AUTO_PUBLISH: ${{ vars.AUTO_PUBLISH }}
           AUTO_PUSH_SOCIAL: ${{ vars.AUTO_PUSH_SOCIAL }}
@@ -73,3 +75,5 @@ jobs:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
           PING_WEBHOOK_SECRET: ${{ secrets.PING_WEBHOOK_SECRET }}
           FALLBACK_IMAGE_URL: ${{ vars.FALLBACK_IMAGE_URL }}
+          ENABLE_FACT_CHECK: ${{ vars.ENABLE_FACT_CHECK }}
+          MIN_FACT_SIGNALS: ${{ vars.MIN_FACT_SIGNALS }}
