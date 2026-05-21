@@ -232,9 +232,9 @@ function fallbackDraft(topic) {
   const shortDescription = `Краткий разбор темы «${topic}»: подтвержденные факты, контекст и последствия.`;
   const paragraphs = [
     `По теме «${topic}» в открытых источниках фиксируется повышенный интерес.`,
-    'На момент публикации подтверждены только базовые сведения; часть деталей может уточняться.',
+    'На момент публикации подтверждены базовые сведения из открытых источников.',
     'Редакция обновляет материал по мере появления официальных данных и проверяемых цифр.',
-    'Если в источниках отсутствуют точные показатели, в тексте явно помечается: данные уточняются.',
+    'Материал дополняется по мере выхода новых подтвержденных публикаций.',
   ];
 
   return {
@@ -465,6 +465,7 @@ function extractFactSnippetsFromSource(sourceHint) {
       return { text, score };
     })
     .filter((x) => x.score > 0)
+    .filter((x) => !/^(rule|source_type|news_source|news_facts|source_domain|source_published_at)\s*:/i.test(x.text))
     .filter((x) => !/news\.google\.com|href=|rss\/articles/i.test(x.text))
     .sort((a, b) => b.score - a.score);
 
@@ -523,27 +524,32 @@ function enforceStructuredArticle({ title, topic, shortDescription, paragraphs, 
     .filter(Boolean)
     .filter((p) => !/^факты на сейчас:/i.test(p))
     .filter((p) => !/^что делать читателю сейчас:/i.test(p))
-    .filter((p) => !/^\d\)\s/.test(p));
+    .filter((p) => !/^\d\)\s/.test(p))
+    .filter((p) => !/^(rule|source_type|news_source|news_facts|source_domain|source_published_at)\s*:/i.test(p))
+    .filter((p) => !/это важно для аудитории|это важно для/i.test(p));
 
-  const factLead =
-    sourceFacts[0] ||
+  const lead =
     cleanedGenerated.find((p) => countFactSignals(p) >= 2) ||
-    `По теме «${topic}» подтвержденные детали пока ограничены, данные уточняются.`;
+    sourceFacts[0] ||
+    cleanedGenerated[0] ||
+    `По теме «${topic}» опубликованы новые данные, часть деталей пока уточняется.`;
 
-  const contextual =
-    cleanedGenerated.find((p) => p !== factLead && p.length > 40) ||
+  const contextLine =
+    cleanedGenerated.find((p) => p !== lead && p.length > 35) ||
     sourceFacts[1] ||
-    'Редакция отслеживает официальные обновления и дополняет материал по мере подтверждений.';
+    cleanedGenerated[1] ||
+    'Материал обновляется по мере появления подтвержденных данных.';
 
-  const whyItMatters =
-    cleanedGenerated.find((p) => /важно|влияет|значит|последств/i.test(p)) ||
-    `Событие важно для аудитории в Казахстане: от дальнейших решений по теме зависят практические последствия.`;
+  const extraLine =
+    cleanedGenerated.find((p) => p !== lead && p !== contextLine && p.length > 35) ||
+    sourceFacts[2] ||
+    '';
 
   const structured = [
-    trimToSentenceBoundary(factLead, 220),
-    trimToSentenceBoundary(contextual, 260),
-    trimToSentenceBoundary(whyItMatters, 220),
-  ];
+    trimToSentenceBoundary(lead, 220),
+    trimToSentenceBoundary(contextLine, 260),
+    extraLine ? trimToSentenceBoundary(extraLine, 220) : '',
+  ].filter(Boolean);
 
   return {
     title: normalizeWhitespace(title || `${topic}: что важно знать сегодня`),
@@ -1114,12 +1120,9 @@ function buildSourceHint(item) {
   const factsPart = Array.isArray(item?.newsFacts) ? item.newsFacts.filter(Boolean).join(' || ') : '';
 
   return [
-    'RULE: Build the article only from factual signals in Google News sources. Do not infer missing facts.',
-    `SOURCE_TYPE: ${item?.sourceType || 'unknown'}`,
-    sourcePart ? `NEWS_SOURCE: ${sourcePart}` : '',
-    factsPart ? `NEWS_FACTS: ${factsPart}` : '',
-    item?.sourceDomain ? `SOURCE_DOMAIN: ${item.sourceDomain}` : '',
-    item?.rawPublishedAt ? `SOURCE_PUBLISHED_AT: ${item.rawPublishedAt}` : '',
+    'Use only confirmed facts from these news materials. No service labels in output.',
+    sourcePart ? `Source context: ${sourcePart}` : '',
+    factsPart ? `Facts from related items: ${factsPart}` : '',
   ]
     .filter(Boolean)
     .join(' | ');
