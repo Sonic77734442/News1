@@ -18,6 +18,7 @@ const googleNewsRssUrls = String(
   .filter(Boolean);
 const googleNewsMaxItems = Number(process.env.GOOGLE_NEWS_MAX_ITEMS || 8);
 const pipelineMaxItems = Number(process.env.NEWS_MAX_ITEMS || googleNewsMaxItems || 8);
+const minRelevanceScore = Number(process.env.MIN_RELEVANCE_SCORE || 2);
 
 function toSafeUrl(rawUrl) {
   const input = String(rawUrl || '').trim();
@@ -90,6 +91,27 @@ const categoryKeywordHints = {
   world: ['мир', 'международ', 'оон', 'ес', 'сша', 'китай', 'россия', 'европа'],
   politics: ['президент', 'парламент', 'выборы', 'министр', 'закон', 'реформа'],
 };
+
+const NEWS1_EDITOR_PROMPT = `
+Ты — профессиональный редактор современного digital-СМИ News1.kz.
+Создавай уникальные новости на основе актуальных инфоповодов и новостных источников.
+
+Правила:
+- Пиши как живой журналист, без копипаста и без шаблонов агрегатора.
+- Сохраняй факты и суть, глубоко перерабатывай формулировки.
+- Допускается объединение нескольких источников, но только с подтверждаемыми фактами.
+- Избегай воды, канцелярита и AI-клише.
+- Стиль уровня: Tengrinews, Forbes Kazakhstan, РБК, VC.ru.
+- Короткие абзацы, читаемая структура, динамичная подача.
+
+SEO:
+- Естественные ключевые слова.
+- Цепляющий SEO-friendly заголовок.
+- Краткий лид, затем фактический контекст и значение для читателя.
+- Без keyword stuffing.
+`;
+
+const BANNED_PHRASES = ['в современном мире', 'следует отметить', 'как известно', 'данная ситуация'];
 
 function transliterate(value) {
   const map = {
@@ -274,6 +296,84 @@ function cleanFeedText(text) {
   return normalizeWhitespace(withoutUrls);
 }
 
+function stripSourceSuffix(title) {
+  const clean = normalizeWhitespace(title);
+  if (!clean) return '';
+  const parts = clean.split(/\s+[—-]\s+/);
+  if (parts.length <= 1) return clean;
+  return parts[0].trim();
+}
+
+function hasKzSignal(text) {
+  const hay = normalizeForDedup(text);
+  const keywords = [
+    'kazakhstan',
+    'qazaqstan',
+    'tokayev',
+    'astana',
+    'almaty',
+    'tenge',
+    'kzt',
+    'kaz',
+    'казахстан',
+    'токаев',
+    'астана',
+    'алматы',
+    'тенге',
+    'мажилис',
+    'акимат',
+  ];
+  return keywords.some((x) => hay.includes(normalizeForDedup(x)));
+}
+
+function relevanceScoreForItem(item) {
+  const title = String(item?.title || '');
+  const snippet = String(item?.contentSnippet || '');
+  const link = String(item?.link || '');
+  const text = `${title} ${snippet}`;
+  let score = 0;
+
+  if (hasKzSignal(text)) score += 2;
+  if (/\.kz(\/|$)|[?&]gl=KZ\b/i.test(link)) score += 1;
+
+  const foreignNoise = /(казани|псковск|латви|эстони|dw\.com|mail\.ru|финам|себежск)/i.test(text);
+  if (foreignNoise && !hasKzSignal(text)) score -= 2;
+
+  return score;
+}
+
+function toEventKey(text) {
+  const stop = new Set([
+    'news',
+    'online',
+    'novosti',
+    'kz',
+    'com',
+    'ru',
+    'org',
+    'net',
+    'the',
+    'and',
+    'что',
+    'это',
+    'для',
+    'как',
+    'при',
+    'про',
+    'над',
+    'под',
+    'или',
+    'новости',
+  ]);
+
+  const tokens = normalizeForDedup(stripSourceSuffix(text))
+    .split(' ')
+    .filter((t) => t.length > 2 && !stop.has(t))
+    .slice(0, 8);
+
+  return tokens.join('-');
+}
+
 function trimToSentenceBoundary(text, maxLength) {
   const clean = normalizeWhitespace(text);
   if (clean.length <= maxLength) return clean;
@@ -296,6 +396,15 @@ function normalizeSeoDescription(description, paragraphs, topic) {
   if (paragraphFallback) return trimToSentenceBoundary(paragraphFallback, 170);
 
   return trimToSentenceBoundary(`Краткий разбор темы «${topic}»: факты, контекст и последствия.`, 170);
+}
+
+function stripBannedPhrases(text) {
+  let out = String(text || '');
+  for (const phrase of BANNED_PHRASES) {
+    const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    out = out.replace(new RegExp(escaped, 'gi'), '');
+  }
+  return normalizeWhitespace(out);
 }
 
 function countFactSignals(text) {
@@ -380,7 +489,8 @@ function sanitizeLegacyTemplatePhrases(paragraphs) {
     .map((p) => p.replace(/что делать читателю сейчас:\s*/gi, ''))
     .map((p) => p.replace(/^\d\)\s*/i, ''))
     .filter(Boolean)
-    .map((p) => p.replace(/\s{2,}/g, ' ').trim());
+    .map((p) => p.replace(/\s{2,}/g, ' ').trim())
+    .map((p) => stripBannedPhrases(p));
 
   return cleaned;
 }
@@ -518,17 +628,17 @@ function sanitizeTemporalReferences(draft, sourceHint) {
 
   const clean = {
     ...draft,
-    title: normalizeWhitespace(stripUntrustedYears(draft?.title || '', trustedYears)),
-    shortDescription: normalizeWhitespace(stripUntrustedYears(draft?.shortDescription || '', trustedYears)),
+    title: stripBannedPhrases(normalizeWhitespace(stripUntrustedYears(draft?.title || '', trustedYears))),
+    shortDescription: stripBannedPhrases(normalizeWhitespace(stripUntrustedYears(draft?.shortDescription || '', trustedYears))),
     paragraphs: (draft?.paragraphs || []).map((p) =>
-      normalizeWhitespace(stripUntrustedYears(p, trustedYears))
+      stripBannedPhrases(normalizeWhitespace(stripUntrustedYears(p, trustedYears)))
     ),
   };
 
   return clean;
 }
 
-async function rewriteWithFactCheck(topic, sourceHint, draft, isBreaking = false) {
+async function rewriteWithFactCheck(topic, sourceHint, draft, isBreaking = false, context = {}) {
   if (!openAiApiKey || !enableFactCheck) return draft;
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -545,12 +655,14 @@ async function rewriteWithFactCheck(topic, sourceHint, draft, isBreaking = false
           role: 'system',
           content: [
             'Ты фактчек-редактор новостей.',
+            NEWS1_EDITOR_PROMPT,
             'Перепиши текст строго по подтверждаемым фактам из sourceHint.',
             'Удали общие фразы и воду.',
             'Добавь конкретику: цифры, даты, имена, организации.',
             'Если точных данных мало, явно пиши: \"данные уточняются\".',
             'Пиши как живой новостной репортер: короткий лид с фактом, затем контекст и почему это важно.',
             'Никаких чеклистов, нумерованных списков и формулировок в стиле шаблона.',
+            'Не используй фразы: «в современном мире», «следует отметить», «как известно», «данная ситуация».',
             'Верни только JSON.',
           ].join(' '),
         },
@@ -558,6 +670,8 @@ async function rewriteWithFactCheck(topic, sourceHint, draft, isBreaking = false
           role: 'user',
           content: JSON.stringify({
             topic,
+            category: context?.category || '',
+            language: context?.language || 'ru',
             sourceHint,
             isBreaking,
             draft,
@@ -601,12 +715,13 @@ async function rewriteWithFactCheck(topic, sourceHint, draft, isBreaking = false
   }
 }
 
-async function generateUniqueArticle(topic, sourceHint = '') {
+async function generateUniqueArticle(topic, sourceHint = '', context = {}) {
   if (!openAiApiKey) {
     return fallbackDraft(topic);
   }
 
   const system = [
+    NEWS1_EDITOR_PROMPT,
     'Ты редактор новостей Казахстана.',
     'Пиши уникально, без копипаста, на русском языке.',
     'Не выдумывай факты: если фактов мало, так и укажи нейтрально.',
@@ -620,12 +735,20 @@ async function generateUniqueArticle(topic, sourceHint = '') {
     'Если дата не подтверждена, пиши без конкретного года.',
     'Пиши в журналистском стиле: лид с фактом, затем контекст, затем почему это важно.',
     'Запрещены искусственные чеклисты, нумерация 1)2)3), канцелярские фразы.',
+    'Не используй фразы: «в современном мире», «следует отметить», «как известно», «данная ситуация».',
     'Верни только JSON без лишнего текста.',
   ].join(' ');
 
   const user = {
-    task: 'Сгенерируй черновик новости по теме тренда.',
+    task: 'Сгенерируй качественную новостную статью для News1.kz.',
     topic,
+    category: context?.category || '',
+    categoryUrls: context?.categoryUrls || '',
+    keywords: context?.keywords || [],
+    language: context?.language || 'ru',
+    wordCount: context?.wordCount || 300,
+    sourceUrls: context?.sourceUrls || [],
+    country: 'Казахстан',
     sourceHint,
     outputSchema: {
       title: 'string, до 90 символов',
@@ -688,7 +811,7 @@ async function generateUniqueArticle(topic, sourceHint = '') {
     let sanitized = sanitizeTemporalReferences(draft, sourceHint);
 
     if (draftLooksWatery(sanitized)) {
-      const rewritten = await rewriteWithFactCheck(topic, sourceHint, sanitized, false);
+      const rewritten = await rewriteWithFactCheck(topic, sourceHint, sanitized, false, context);
       sanitized = sanitizeTemporalReferences(rewritten, sourceHint);
     }
 
@@ -916,14 +1039,33 @@ async function fetchGoogleNewsItems() {
       const feed = await parser.parseURL(url);
       const items = (feed.items || []).slice(0, Math.max(1, googleNewsMaxItems));
       for (const item of items) {
-        const title = normalizeWhitespace(item?.title || '');
+        const title = stripSourceSuffix(cleanFeedText(item?.title || ''));
         if (!title) continue;
-        collected.push({
-          title: cleanFeedText(title),
-          contentSnippet: cleanFeedText(item?.contentSnippet || feed?.title || ''),
-          content: cleanFeedText(item?.content || item?.contentSnippet || ''),
+        const contentSnippet = cleanFeedText(item?.contentSnippet || feed?.title || '');
+        const content = cleanFeedText(item?.content || item?.contentSnippet || '');
+        const prepared = {
+          title,
+          contentSnippet,
+          content,
           link: item?.link || url,
           sourceType: 'news',
+        };
+        const relevanceScore = relevanceScoreForItem(prepared);
+        if (relevanceScore < minRelevanceScore) continue;
+
+        collected.push({
+          ...prepared,
+          relevanceScore,
+          eventKey: toEventKey(title),
+          rawPublishedAt: item?.pubDate || item?.isoDate || null,
+          sourceDomain: (() => {
+            try {
+              return new URL(prepared.link).hostname;
+            } catch {
+              return '';
+            }
+          })(),
+          link: item?.link || url,
         });
       }
     } catch (error) {
@@ -942,11 +1084,16 @@ function mergeAndDedupSourceItems(primaryItems, secondaryItems) {
   }));
 
   for (const candidate of secondaryItems) {
-    const duplicate = merged.find((x) => isLikelyDuplicate(candidate?.title, { title: x?.title }));
+    const duplicate = merged.find(
+      (x) =>
+        (candidate?.eventKey && x?.eventKey && candidate.eventKey === x.eventKey) ||
+        isLikelyDuplicate(candidate?.title, { title: x?.title })
+    );
     if (duplicate) {
       duplicate.newsFacts.push(
         [candidate?.title, candidate?.contentSnippet, candidate?.content, candidate?.link].filter(Boolean).join(' | ')
       );
+      duplicate.relevanceScore = Math.max(Number(duplicate.relevanceScore || 0), Number(candidate.relevanceScore || 0));
       continue;
     }
 
@@ -971,6 +1118,8 @@ function buildSourceHint(item) {
     `SOURCE_TYPE: ${item?.sourceType || 'unknown'}`,
     sourcePart ? `NEWS_SOURCE: ${sourcePart}` : '',
     factsPart ? `NEWS_FACTS: ${factsPart}` : '',
+    item?.sourceDomain ? `SOURCE_DOMAIN: ${item.sourceDomain}` : '',
+    item?.rawPublishedAt ? `SOURCE_PUBLISHED_AT: ${item.rawPublishedAt}` : '',
   ]
     .filter(Boolean)
     .join(' | ');
@@ -979,7 +1128,11 @@ function buildSourceHint(item) {
 async function run() {
   console.log('Fetching sources: Google News RSS');
   const googleItems = await fetchGoogleNewsItems();
-  const items = mergeAndDedupSourceItems([], googleItems);
+  console.log(`Google News candidates after relevance filter: ${googleItems.length}`);
+  const items = mergeAndDedupSourceItems([], googleItems).sort(
+    (a, b) => Number(b.relevanceScore || 0) - Number(a.relevanceScore || 0)
+  );
+  console.log(`Queue after event dedup: ${items.length}`);
 
   if (!items.length) {
     console.log('No source items found.');
@@ -1007,8 +1160,16 @@ async function run() {
     const slug = await buildUniqueSlug(baseSlug);
 
     const sourceHint = buildSourceHint(item);
+    const categoryHint = rankCategoriesByKeywords(topic, categories)?.slug || categories?.[0]?.slug || '';
+    const generationContext = {
+      category: categoryHint,
+      keywords: makeTokenSet(topic) ? Array.from(makeTokenSet(topic)).slice(0, 8) : [],
+      sourceUrls: [item?.link].filter(Boolean),
+      language: 'ru',
+      wordCount: 320,
+    };
     // eslint-disable-next-line no-await-in-loop
-    const generated = await generateUniqueArticle(topic, sourceHint);
+    const generated = await generateUniqueArticle(topic, sourceHint, generationContext);
 
     // eslint-disable-next-line no-await-in-loop
     const pickedCategory = await pickCategory(categories, topic, generated);
@@ -1034,7 +1195,7 @@ async function run() {
         imageQuery: generated.imageQuery || topic,
       };
       // eslint-disable-next-line no-await-in-loop
-      const rewritten = await rewriteWithFactCheck(topic, sourceHint, forcedDraft, false);
+      const rewritten = await rewriteWithFactCheck(topic, sourceHint, forcedDraft, false, generationContext);
       structured = enforceStructuredArticle({
         title: rewritten?.title || rawTitle,
         topic,

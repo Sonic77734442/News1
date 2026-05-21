@@ -64,6 +64,7 @@ jobs:
           GOOGLE_NEWS_RSS_URLS: ${{ vars.GOOGLE_NEWS_RSS_URLS }}
           GOOGLE_NEWS_MAX_ITEMS: ${{ vars.GOOGLE_NEWS_MAX_ITEMS }}
           NEWS_MAX_ITEMS: ${{ vars.NEWS_MAX_ITEMS }}
+          MIN_RELEVANCE_SCORE: ${{ vars.MIN_RELEVANCE_SCORE }}
           AUTO_CONTENT_AUTHOR_NAME: ${{ vars.AUTO_CONTENT_AUTHOR_NAME }}
           AUTO_PUBLISH: ${{ vars.AUTO_PUBLISH }}
           AUTO_PUSH_SOCIAL: ${{ vars.AUTO_PUSH_SOCIAL }}
