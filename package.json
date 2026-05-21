@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "content:trends:drafts": "node scripts/trends-to-sanity-drafts.mjs",
-    "content:trends:auto": "set AUTO_PUBLISH=1&& set AUTO_PUSH_SOCIAL=1&& node scripts/trends-to-sanity-drafts.mjs"
+    "content:trends:auto": "set AUTO_PUBLISH=1&& set AUTO_PUSH_SOCIAL=1&& node scripts/trends-to-sanity-drafts.mjs",
+    "content:currency:morning": "node scripts/publish-currency-rates.mjs"
   },
   "dependencies": {
     "@portabletext/react": "^3.2.1",

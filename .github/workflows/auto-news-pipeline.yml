@@ -4,9 +4,11 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '15 */2 * * *'
+    - cron: '10 3 * * *'
 
 jobs:
   generate-and-publish:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '15 */2 * * *'
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -63,6 +65,8 @@ jobs:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           GOOGLE_NEWS_RSS_URLS: ${{ vars.GOOGLE_NEWS_RSS_URLS }}
           GOOGLE_NEWS_MAX_ITEMS: ${{ vars.GOOGLE_NEWS_MAX_ITEMS }}
+          EXTRA_NEWS_RSS_URLS: ${{ vars.EXTRA_NEWS_RSS_URLS }}
+          EXTRA_NEWS_MAX_ITEMS: ${{ vars.EXTRA_NEWS_MAX_ITEMS }}
           NEWS_MAX_ITEMS: ${{ vars.NEWS_MAX_ITEMS }}
           MIN_RELEVANCE_SCORE: ${{ vars.MIN_RELEVANCE_SCORE }}
           AUTO_CONTENT_AUTHOR_NAME: ${{ vars.AUTO_CONTENT_AUTHOR_NAME }}
@@ -77,3 +81,61 @@ jobs:
           FALLBACK_IMAGE_URL: ${{ vars.FALLBACK_IMAGE_URL }}
           ENABLE_FACT_CHECK: ${{ vars.ENABLE_FACT_CHECK }}
           MIN_FACT_SIGNALS: ${{ vars.MIN_FACT_SIGNALS }}
+          MIN_BODY_CHARS: ${{ vars.MIN_BODY_CHARS }}
+
+  publish-morning-currency:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '10 3 * * *'
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Preflight env check
+        shell: bash
+        env:
+          SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+          SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
+        run: |
+          set -euo pipefail
+          missing=0
+          for key in SANITY_API_TOKEN SANITY_DATASET; do
+            if [ -z "${!key:-}" ]; then
+              echo "::error::Missing required secret: $key"
+              missing=1
+            fi
+          done
+          if [ -n "${SANITY_DATASET:-}" ]; then
+            if ! [[ "$SANITY_DATASET" =~ ^~?[a-z0-9_-]{1,64}$ ]]; then
+              echo "::error::Invalid SANITY_DATASET format. Use something like production"
+              missing=1
+            fi
+          fi
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Publish morning currency rates
+        shell: bash
+        run: |
+          export AUTO_PUBLISH="${AUTO_PUBLISH:-1}"
+          npm run content:currency:morning
+        env:
+          SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
+          SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
+          SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+          AUTO_CONTENT_AUTHOR_NAME: ${{ vars.AUTO_CONTENT_AUTHOR_NAME }}
+          AUTO_PUBLISH: ${{ vars.AUTO_PUBLISH }}
+          CURRENCY_RATES_URLS: ${{ vars.CURRENCY_RATES_URLS }}
+          CURRENCY_CATEGORY_SLUG: ${{ vars.CURRENCY_CATEGORY_SLUG }}
