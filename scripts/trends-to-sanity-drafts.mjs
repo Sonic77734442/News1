@@ -476,6 +476,9 @@ function extractFactSnippetsFromSource(sourceHint) {
       return { text, score };
     })
     .filter((x) => x.score > 0)
+    .filter((x) => !/^use only confirmed facts from these news materials/i.test(x.text))
+    .filter((x) => !/^source context\s*:/i.test(x.text))
+    .filter((x) => !/^facts from related items\s*:/i.test(x.text))
     .filter((x) => !/^(rule|source_type|news_source|news_facts|source_domain|source_published_at)\s*:/i.test(x.text))
     .filter((x) => !/news\.google\.com|href=|rss\/articles/i.test(x.text))
     .sort((a, b) => b.score - a.score);
@@ -497,6 +500,9 @@ function sanitizeLegacyTemplatePhrases(paragraphs) {
   const cleaned = (Array.isArray(paragraphs) ? paragraphs : [])
     .map((p) => normalizeWhitespace(p))
     .filter(Boolean)
+    .map((p) => p.replace(/^source context\s*:\s*/i, ''))
+    .map((p) => p.replace(/^facts from related items\s*:\s*/i, ''))
+    .map((p) => p.replace(/^use only confirmed facts from these news materials\.?\s*/i, ''))
     .map((p) => p.replace(/факты на сейчас:\s*/gi, ''))
     .map((p) => p.replace(/что делать читателю сейчас:\s*/gi, ''))
     .map((p) => p.replace(/редакция проверяет официальные публикации[^.]*\./gi, ''))
@@ -506,12 +512,23 @@ function sanitizeLegacyTemplatePhrases(paragraphs) {
     .map((p) => p.replace(/\s{2,}/g, ' ').trim())
     .map((p) => stripBannedPhrases(p));
 
-  return cleaned;
+  const unique = [];
+  const seen = new Set();
+  for (const paragraph of cleaned) {
+    const key = normalizeForDedup(paragraph);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    unique.push(paragraph);
+  }
+
+  return unique;
 }
 
 function containsLegacyTemplatePhrases(paragraphs, shortDescription = '') {
   const all = [shortDescription, ...(Array.isArray(paragraphs) ? paragraphs : [])].join(' ').toLowerCase();
   return (
+    all.includes('source context:') ||
+    all.includes('facts from related items:') ||
     all.includes('факты на сейчас') ||
     all.includes('что делать читателю сейчас') ||
     all.includes('редакция проверяет официальные публикации') ||
@@ -553,6 +570,8 @@ function enforceStructuredArticle({ title, topic, shortDescription, paragraphs, 
   const cleanedGenerated = (Array.isArray(paragraphs) ? paragraphs : [])
     .map((p) => normalizeWhitespace(p))
     .filter(Boolean)
+    .filter((p) => !/^source context\s*:/i.test(p))
+    .filter((p) => !/^facts from related items\s*:/i.test(p))
     .filter((p) => !/^факты на сейчас:/i.test(p))
     .filter((p) => !/^что делать читателю сейчас:/i.test(p))
     .filter((p) => !/^\d\)\s/.test(p))
@@ -1133,6 +1152,9 @@ async function fetchExtraNewsItems() {
 }
 
 function mergeAndDedupSourceItems(primaryItems, secondaryItems) {
+  const makeFactEntry = (x) =>
+    [x?.title, x?.contentSnippet, x?.content, x?.link].filter(Boolean).join(' | ');
+
   const merged = primaryItems.map((x) => ({
     ...x,
     sourceType: x?.sourceType || 'news',
@@ -1146,9 +1168,13 @@ function mergeAndDedupSourceItems(primaryItems, secondaryItems) {
         isLikelyDuplicate(candidate?.title, { title: x?.title })
     );
     if (duplicate) {
-      duplicate.newsFacts.push(
-        [candidate?.title, candidate?.contentSnippet, candidate?.content, candidate?.link].filter(Boolean).join(' | ')
+      const factEntry = makeFactEntry(candidate);
+      const exists = (duplicate.newsFacts || []).some(
+        (v) => normalizeForDedup(v) === normalizeForDedup(factEntry)
       );
+      if (factEntry && !exists) {
+        duplicate.newsFacts.push(factEntry);
+      }
       duplicate.relevanceScore = Math.max(Number(duplicate.relevanceScore || 0), Number(candidate.relevanceScore || 0));
       continue;
     }
@@ -1156,9 +1182,7 @@ function mergeAndDedupSourceItems(primaryItems, secondaryItems) {
     merged.push({
       ...candidate,
       sourceType: candidate?.sourceType || 'news',
-      newsFacts: [
-        [candidate?.title, candidate?.contentSnippet, candidate?.content, candidate?.link].filter(Boolean).join(' | '),
-      ],
+      newsFacts: [makeFactEntry(candidate)].filter(Boolean),
     });
   }
 
@@ -1166,8 +1190,17 @@ function mergeAndDedupSourceItems(primaryItems, secondaryItems) {
 }
 
 function buildSourceHint(item) {
-  const sourcePart = [item?.contentSnippet, item?.content, item?.link].filter(Boolean).join(' | ');
-  const factsPart = Array.isArray(item?.newsFacts) ? item.newsFacts.filter(Boolean).join(' || ') : '';
+  const sourcePart = [item?.contentSnippet, item?.content, item?.link]
+    .map((x) => cleanFeedText(x))
+    .filter(Boolean)
+    .filter((value, index, arr) => arr.findIndex((x) => normalizeForDedup(x) === normalizeForDedup(value)) === index)
+    .join(' | ');
+  const uniqueFacts = (Array.isArray(item?.newsFacts) ? item.newsFacts : [])
+    .map((x) => cleanFeedText(x))
+    .filter(Boolean)
+    .filter((value, index, arr) => arr.findIndex((x) => normalizeForDedup(x) === normalizeForDedup(value)) === index)
+    .slice(0, 4);
+  const factsPart = uniqueFacts.join(' || ');
 
   return [
     'Use only confirmed facts from these news materials. No service labels in output.',
